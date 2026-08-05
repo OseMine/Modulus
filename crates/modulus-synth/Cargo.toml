@@ -1,0 +1,14 @@
+[package]
+name = "modulus-synth"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Modulus — hybrid subtractive synthesizer (VST3/CLAP)"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+nih_plug = { workspace = true }
+modulus-core = { workspace = true }

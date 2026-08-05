@@ -1,0 +1,33 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/modulus-core",
+    "crates/modulus-synth",
+    "crates/modulus-fx",
+    "xtask",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "ISC"
+authors = ["The Muzikar"]
+
+[workspace.dependencies]
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", rev = "dfafe90349aa3d8e40922ec031b6d673803d6432", features = ["assert_process_allocs"] }
+modulus-core = { path = "crates/modulus-core" }
+
+# The pinned nih-plug revision depends on anymap 1.0.0-beta.2, which does not
+# compile with current rustc (E0804 on trait-object pointer casts). We vendor a
+# fixed copy locally instead of drifting to a newer nih-plug API.
+[patch.crates-io]
+anymap = { path = "vendor/anymap" }
+
+[profile.release]
+lto = "thin"
+strip = "symbols"
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = "none"
