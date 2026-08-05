@@ -1,5 +1,7 @@
 use modulus_core::filter::FilterType as CoreFilterType;
 use nih_plug::prelude::*;
+use nih_plug_egui::EguiState;
+use std::sync::Arc;
 
 #[derive(Enum, PartialEq, Clone, Copy, Debug)]
 pub enum ParamFilterType {
@@ -26,6 +28,11 @@ impl ParamFilterType {
 
 #[derive(Params)]
 pub struct ModulusFxParams {
+    /// The editor state, saved together with the parameter state so the window
+    /// size can be restored.
+    #[persist = "editor-state"]
+    pub editor_state: Arc<EguiState>,
+
     #[id = "filt_type"]
     pub filt_type: EnumParam<ParamFilterType>,
     #[id = "filt_cutoff"]
@@ -61,6 +68,8 @@ pub struct ModulusFxParams {
 impl Default for ModulusFxParams {
     fn default() -> Self {
         Self {
+            editor_state: EguiState::from_size(520, 480),
+
             filt_type: EnumParam::new("Filter Type", ParamFilterType::Moog),
             filt_cutoff: FloatParam::new(
                 "Filter Cutoff",

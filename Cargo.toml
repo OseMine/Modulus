@@ -15,6 +15,7 @@ authors = ["The Muzikar"]
 
 [workspace.dependencies]
 nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", rev = "dfafe90349aa3d8e40922ec031b6d673803d6432", features = ["assert_process_allocs"] }
+nih_plug_egui = { git = "https://github.com/robbert-vdh/nih-plug.git", rev = "dfafe90349aa3d8e40922ec031b6d673803d6432" }
 modulus-core = { path = "crates/modulus-core" }
 
 # The pinned nih-plug revision depends on anymap 1.0.0-beta.2, which does not

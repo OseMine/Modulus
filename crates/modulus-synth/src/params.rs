@@ -2,6 +2,8 @@ use modulus_core::filter::FilterType as CoreFilterType;
 use modulus_core::voice::Osc2Mode as CoreOsc2Mode;
 use modulus_core::waveform::Waveform as CoreWaveform;
 use nih_plug::prelude::*;
+use nih_plug_egui::EguiState;
+use std::sync::Arc;
 
 #[derive(Enum, PartialEq, Clone, Copy, Debug)]
 pub enum ParamWaveform {
@@ -80,6 +82,11 @@ impl ParamFilterType {
 
 #[derive(Params)]
 pub struct ModulusParams {
+    /// The editor state, saved together with the parameter state so the window
+    /// size can be restored.
+    #[persist = "editor-state"]
+    pub editor_state: Arc<EguiState>,
+
     #[id = "global_tuning"]
     pub global_tuning: FloatParam,
 
@@ -149,6 +156,8 @@ pub struct ModulusParams {
 impl Default for ModulusParams {
     fn default() -> Self {
         Self {
+            editor_state: EguiState::from_size(640, 520),
+
             global_tuning: tuning_param("Tuning", 440.0),
 
             osc1_waveform: EnumParam::new("OSC 1 Waveform", ParamWaveform::Sine),

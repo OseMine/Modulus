@@ -169,6 +169,12 @@ pub struct FxFrameParams {
     pub gain_out_db: f32,
 }
 
+impl Default for Chorus {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Serial effects rack for Modulus FX: input gain -> variable filter ->
 /// chorus -> output gain.
 pub struct FxEngine {
@@ -210,6 +216,12 @@ impl FxEngine {
         }
 
         apply_gain_db(frame, params.gain_out_db);
+    }
+}
+
+impl Default for FxEngine {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
