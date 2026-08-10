@@ -64,4 +64,15 @@ impl Oscillator {
         }
         sample
     }
+
+    /// Samples the waveform at `phase + offset` (phase modulation, classic
+    /// FM) while advancing the phase normally.
+    pub fn generate_at(&mut self, offset: f32) -> f32 {
+        let sample = self.waveform.generate(self.phase + offset, &mut self.rng);
+        self.phase += self.phase_increment;
+        if self.phase >= 2.0 * PI {
+            self.phase -= 2.0 * PI;
+        }
+        sample
+    }
 }

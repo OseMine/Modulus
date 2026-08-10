@@ -17,6 +17,7 @@ fn builtin_modules_are_categorized() {
     assert_eq!(registry.kind_of("oscillator"), Some(ModuleKind::SoundGen));
     assert_eq!(registry.kind_of("oscillator2"), Some(ModuleKind::SoundGen));
     assert_eq!(registry.kind_of("am_bridge"), Some(ModuleKind::SoundGen));
+    assert_eq!(registry.kind_of("fm_bridge"), Some(ModuleKind::SoundGen));
     assert_eq!(registry.kind_of("envelope"), Some(ModuleKind::Envelope));
     assert_eq!(registry.kind_of("lfo"), Some(ModuleKind::Modulator));
     assert_eq!(registry.kind_of("filter"), Some(ModuleKind::Fx));
@@ -29,7 +30,10 @@ fn names_by_kind_groups_registry() {
     let registry = builtin_registry();
     let mut soundgen: Vec<&str> = registry.names_by_kind(ModuleKind::SoundGen).collect();
     soundgen.sort_unstable();
-    assert_eq!(soundgen, vec!["am_bridge", "oscillator", "oscillator2"]);
+    assert_eq!(
+        soundgen,
+        vec!["am_bridge", "fm_bridge", "oscillator", "oscillator2"]
+    );
 
     let envelopes: Vec<&str> = registry.names_by_kind(ModuleKind::Envelope).collect();
     assert_eq!(envelopes, vec!["envelope"]);
@@ -119,6 +123,65 @@ fn am_bridge_is_silent_without_gate() {
     let registry = builtin_registry();
     let mut bridge = registry.create("am_bridge").unwrap();
     let (peak, _) = render(&mut bridge, 1024, false);
+    assert_eq!(peak, 0.0);
+}
+
+#[test]
+fn fm_bridge_zero_amount_is_a_clean_carrier() {
+    let registry = builtin_registry();
+    let mut fm = registry.create("fm_bridge").unwrap();
+    assert_eq!(fm.kind(), ModuleKind::SoundGen);
+    assert!(fm.set_param("fm_amount", 0.0));
+    assert!(fm.set_param("carrier_level", 1.0));
+
+    // Pure carrier sine at level 1: swings both ways and stays in [-1, 1].
+    let (peak, min) = render(&mut fm, 8192, true);
+    assert!(peak > 0.9 && peak <= 1.0, "clean sine, peak {peak}");
+    assert!(min < 0.0, "sine should swing negative, min {min}");
+}
+
+#[test]
+fn fm_bridge_amount_changes_the_signal() {
+    let registry = builtin_registry();
+    fn power(fm: &mut Box<dyn AudioModule>, samples: usize) -> f32 {
+        fm.prepare(44_100.0);
+        let mut frame = [0.0; 2];
+        let mut total = 0.0_f32;
+        for sample in 0..samples {
+            if sample == 0 {
+                fm.note_on(60, 1.0, 440.0);
+            }
+            fm.process(&mut frame, &events(), 44_100.0);
+            total += frame[0] * frame[0];
+        }
+        total / samples as f32
+    }
+    let render_amount = |amount: f32| {
+        let mut fm = registry.create("fm_bridge").unwrap();
+        assert!(fm.set_param("fm_amount", amount));
+        assert!(fm.set_param("carrier_level", 1.0));
+        assert!(fm.set_param("modulator_level", 1.0));
+        assert!(fm.set_param("modulator_pitch", 12.0)); // 2:1 ratio
+        power(&mut fm, 16_384)
+    };
+    let plain = render_amount(0.0);
+    // Sine at level 1 averages to half its peak power.
+    assert!(
+        (plain - 0.5).abs() < 0.05,
+        "identity FM should be a plain sine, power {plain}"
+    );
+    let deep = render_amount(2.0);
+    assert!(
+        (deep - plain).abs() > 0.01,
+        "FM amount should change the signal: {plain} vs {deep}"
+    );
+}
+
+#[test]
+fn fm_bridge_is_silent_without_gate() {
+    let registry = builtin_registry();
+    let mut fm = registry.create("fm_bridge").unwrap();
+    let (peak, _) = render(&mut fm, 1024, false);
     assert_eq!(peak, 0.0);
 }
 

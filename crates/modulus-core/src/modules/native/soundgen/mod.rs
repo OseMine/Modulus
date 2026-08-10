@@ -2,6 +2,7 @@
 //! output is added into the frame by the graph.
 
 pub mod am_bridge;
+pub mod fm_bridge;
 pub mod oscillator;
 
 use super::super::registry::ModuleRegistry;
@@ -10,4 +11,5 @@ use super::super::registry::ModuleRegistry;
 pub fn register(registry: &mut ModuleRegistry) {
     oscillator::register(registry);
     am_bridge::register(registry);
+    fm_bridge::register(registry);
 }

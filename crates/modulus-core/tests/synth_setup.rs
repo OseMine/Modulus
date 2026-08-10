@@ -10,6 +10,37 @@ use modulus_core::synth_setup::SynthSetup;
 
 const DEFAULT_JSON: &str = include_str!("../../../setups/default.json");
 const BRIDGE_JSON: &str = include_str!("../../../setups/bridge_lead.json");
+const JUNO_JSON: &str = include_str!("../../../setups/juno_106.json");
+const DX7_JSON: &str = include_str!("../../../setups/dx7.json");
+
+/// Every shipped setups/*.json must parse, build on the built-in registry
+/// and render an audible, non-silent signal.
+#[test]
+fn shipped_setups_build_and_render() {
+    for (file, source) in [
+        ("default.json", DEFAULT_JSON),
+        ("bridge_lead.json", BRIDGE_JSON),
+        ("juno_106.json", JUNO_JSON),
+        ("dx7.json", DX7_JSON),
+    ] {
+        let setup = SynthSetup::from_json(source)
+            .unwrap_or_else(|err| panic!("{file} should parse: {err}"));
+        // Styles that deviate from the role defaults must pin their models,
+        // otherwise the role default (e.g. `oscillator`) silently replaces
+        // the intended module.
+        if file == "juno_106.json" {
+            assert_eq!(setup.soundgens[0].model, "oscillator", "{file} model");
+        }
+        if file == "dx7.json" {
+            assert!(setup.soundgens.iter().all(|sg| sg.model == "fm_bridge"));
+        }
+        let mut graph = setup
+            .build(&builtin_registry())
+            .unwrap_or_else(|err| panic!("{file} should build: {err}"));
+        let peak = render(&mut graph, 4096);
+        assert!(peak > 0.05, "{file} should be audible, got peak {peak}");
+    }
+}
 
 fn events() -> ModuleEvents {
     ModuleEvents {

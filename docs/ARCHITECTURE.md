@@ -98,7 +98,8 @@ See [MODULES](MODULES.md) and [LUA](LUA.md) for the full API.
   module is registering one builder (mirrors how the old `workspace/variable-*`
   repos each owned one DSP unit).
 - `am_bridge` is the `Am-Synth` carrier/modulator bridge (Mix or AM modes,
-  with `am_depth`) brought back as a sound generator module.
+  with `am_depth`) brought back as a sound generator module; `fm_bridge` is a
+  classic DX7-style 2-operator FM pair (modulator phase-modulates the carrier).
 - Lua patches are compiled at load time into a native graph; the Lua VM is
   never active in the render path.
 - Compiled modules implement the `modulus_module_*` C ABI and are loaded via

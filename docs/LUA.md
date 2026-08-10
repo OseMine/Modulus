@@ -41,7 +41,7 @@ Each entry table:
 
 - `kind` (string, required): a registered module name. Built-ins by
   category: **sound generators** — `oscillator`, `oscillator2`,
-  `am_bridge`; **envelope** — `envelope`; **modulator** — `lfo`;
+  `am_bridge`, `fm_bridge`; **envelope** — `envelope`; **modulator** — `lfo`;
   **FX** — `filter`, `chorus`, `gain`.
 - Everything else is a parameter assignment; values may be numbers or
   numeric strings. Unknown parameter names are ignored.

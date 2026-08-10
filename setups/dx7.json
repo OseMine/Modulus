@@ -1,0 +1,41 @@
+{
+  "name": "DX7 Style",
+  "comment": "Two-operator FM, DX7-style: a pair of FM bridges (2:1 and ~7:1 operator ratios) into an open filter with a percussive decay.",
+  "soundgens": [
+    { "model": "fm_bridge", "params": {
+        "carrier_waveform": 0,
+        "carrier_level": 0.42,
+        "carrier_pitch": 0,
+        "modulator_waveform": 0,
+        "modulator_level": 0.6,
+        "modulator_pitch": 12,
+        "fm_amount": 0.8
+      } },
+    { "model": "fm_bridge", "params": {
+        "carrier_waveform": 0,
+        "carrier_level": 0.3,
+        "carrier_pitch": 0,
+        "modulator_waveform": 0,
+        "modulator_level": 0.5,
+        "modulator_pitch": 34,
+        "fm_amount": 0.5
+      } }
+  ],
+  "mixer": { "output_level": 1.0 },
+  "filter": {
+    "params": { "filter_type": 1, "cutoff": 18000, "resonance": 0.0 },
+    "pregain_db": 0.0
+  },
+  "amp_envelope": {
+    "params": { "attack": 0.001, "decay": 1.0, "sustain": 0.0, "release": 0.6 }
+  },
+  "filter_envelope": {
+    "params": { "attack": 0.0, "decay": 0.5, "sustain": 0.0, "release": 0.3 },
+    "contour_octaves": 0.0
+  },
+  "modulator": {
+    "params": { "waveform": 0, "rate_hz": 5.0, "depth": 0.3 },
+    "to_amp": 0.05,
+    "to_filter_octaves": 0.0
+  }
+}

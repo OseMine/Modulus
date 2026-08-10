@@ -71,8 +71,8 @@ Fields:
 ### Model predefinition (optional)
 
 Every slot may set a `model` — a registered module name (e.g.
-`am_bridge`, `filter`, `envelope`, `lfo`, or a compiled module). The role
-default is used when `model` is empty:
+`am_bridge`, `fm_bridge`, `filter`, `envelope`, `lfo`, or a compiled
+module). The role default is used when `model` is empty:
 
 | Role | Default model |
 | ---- | ------------- |
@@ -84,6 +84,15 @@ default is used when `model` is empty:
 Slots are validated against their role at build time (e.g. an LFO cannot
 fill a soundgen slot). See `setups/bridge_lead.json` for a setup that
 predefines an `am_bridge` and a `lfo`.
+
+## Shipped setups
+
+- `setups/default.json` — the 4-soundgen subtracted default.
+- `setups/bridge_lead.json` — AM-bridge lead (`am_bridge` + `lfo`).
+- `setups/juno_106.json` — Juno-106 style: single VA-saw DCO into a
+  Roland LP24 with 2-octave filter envelope, resonance, LFO wobble.
+- `setups/dx7.json` — DX7 style: two-operator FM pairs (`fm_bridge`,
+  2:1 and ≈7:1 ratios) into an open filter with a percussive decay.
 
 ## Rendering
 

@@ -1,0 +1,24 @@
+{
+  "name": "Juno 106 Style",
+  "comment": "Single-DCO Juno-106 voice: VA saw into a Roland-style LP24 with resonance, classic ADSR + filter envelope, LFO ready for filter wobble.",
+  "soundgens": [
+    { "model": "oscillator", "params": { "waveform": 4, "level": 0.6, "pitch_semitones": 0 } }
+  ],
+  "mixer": { "output_level": 1.0 },
+  "filter": {
+    "params": { "filter_type": 1, "cutoff": 2500, "resonance": 0.35 },
+    "pregain_db": 3.0
+  },
+  "amp_envelope": {
+    "params": { "attack": 0.02, "decay": 0.3, "sustain": 0.65, "release": 0.35 }
+  },
+  "filter_envelope": {
+    "params": { "attack": 0.02, "decay": 0.45, "sustain": 0.3, "release": 0.45 },
+    "contour_octaves": 2.0
+  },
+  "modulator": {
+    "params": { "waveform": 0, "rate_hz": 5.0, "depth": 0.6 },
+    "to_amp": 0.0,
+    "to_filter_octaves": 0.8
+  }
+}

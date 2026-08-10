@@ -67,6 +67,7 @@ Add a new module to a category by putting it in that folder and calling its
 | ---- | ------ |
 | `oscillator` / `oscillator2` | `waveform` (0–7), `level`, `pitch_semitones` |
 | `am_bridge` | carrier/modulator pair bridged like the `Am-Synth` voice: `carrier_waveform` (0–7), `carrier_level`, `carrier_pitch`, `modulator_waveform` (0–7), `modulator_level`, `modulator_pitch`, `mode` (0 = Mix, 1 = AM), `am_depth` (0–1) |
+| `fm_bridge` | classic DX7-style 2-operator FM pair: the modulator phase-modulates the carrier (`carrier_phase + modulator * modulator_level * fm_amount`); `carrier_waveform` (0–7), `carrier_level`, `carrier_pitch`, `modulator_waveform` (0–7), `modulator_level`, `modulator_pitch` (semitone offset, e.g. +12 = 2:1, +19 = 3:1, +24 = 4:1, +34 ≈ 7:1), `fm_amount` (modulation index, ≥ 0) |
 
 ### Envelopes — `envelope/` (`Envelope`)
 
