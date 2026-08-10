@@ -45,3 +45,11 @@ optional = true
 [features]
 default = ["std"]
 std = []
+
+# Vendored patch build config: silence upstream lint noise so the workspace
+# can enforce `-D warnings` in CI.
+[lints.rust]
+mismatched_lifetime_syntaxes = "allow"
+
+[lints.clippy]
+needless_lifetimes = "allow"

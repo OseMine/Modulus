@@ -1,3 +1,6 @@
+// Vendored copy of anymap 1.0.0-beta.2 with the E0804 trait-object cast
+// fixed. See lib.rs for the lint exception.
+
 use core::fmt;
 use core::any::{Any, TypeId};
 #[cfg(not(feature = "std"))]

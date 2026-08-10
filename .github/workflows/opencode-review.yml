@@ -1,0 +1,55 @@
+name: opencode-review
+
+on:
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: "Optional: Fokusbereich des Reviews (z. B. 'script.js Algorithmen')"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 6 * * 1" # Montag 06:00 UTC
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Review-Prompt aus Datei laden
+        id: review_prompt
+        shell: bash
+        run: |
+          {
+            echo 'review_prompt<<PROMT_EOF'
+            awk 'BEGIN{p=1} /^=====BINDUNGS-HINWEISE=====$/{p=0} p{print}' opencode-review-prompt.md \
+              | sed "s|__FOCUS__|${{ github.event.inputs.focus || 'das gesamte Projekt' }}|g"
+            echo 'PROMT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run OpenCode review
+        uses: anomalyco/opencode/github@latest
+        env:
+          # OpenCode Zen API-Key als Secret anlegen:
+          # GitHub → Settings → Secrets and variables → Actions → OPENCODE_API_KEY
+          # (Key unter https://opencode.ai/auth abrufen; Free-Modelle kosten nichts)
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: opencode/deepseek-v4-flash-free
+          agent: reviewer
+          use_github_token: true
+          prompt: ${{ steps.review_prompt.outputs.review_prompt }}

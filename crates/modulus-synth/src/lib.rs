@@ -1,4 +1,5 @@
 use std::num::NonZeroU32;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use modulus_core::fx::{ChorusParams, SynthFxParams};
@@ -6,13 +7,34 @@ use modulus_core::synth::SynthEngine;
 use modulus_core::voice::SynthFrameParams;
 use nih_plug::prelude::*;
 
+mod editor;
 mod params;
 use params::ModulusParams;
+
+/// Live state shared with the GUI: the number of currently sounding voices.
+pub struct DesignState {
+    pub voice_count: AtomicUsize,
+}
+
+impl DesignState {
+    pub fn new() -> Self {
+        Self {
+            voice_count: AtomicUsize::new(0),
+        }
+    }
+}
+
+impl Default for DesignState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct Modulus {
     params: Arc<ModulusParams>,
     sample_rate: f32,
     engine: SynthEngine,
+    design_state: Arc<DesignState>,
 }
 
 impl Default for Modulus {
@@ -21,6 +43,7 @@ impl Default for Modulus {
             params: Arc::new(ModulusParams::default()),
             sample_rate: 44_100.0,
             engine: SynthEngine::new(44_100.0),
+            design_state: Arc::new(DesignState::new()),
         }
     }
 }
@@ -46,6 +69,10 @@ impl Plugin for Modulus {
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
+    }
+
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create_editor(self.params.clone(), self.design_state.clone())
     }
 
     fn initialize(
@@ -128,6 +155,11 @@ impl Plugin for Modulus {
             };
 
             let frame = self.engine.process(&frame_params, &fx_params, sample_rate);
+            if self.params.editor_state.is_open() {
+                self.design_state
+                    .voice_count
+                    .store(self.engine.active_voices(), Ordering::Relaxed);
+            }
             for (channel_index, sample) in channel_samples.iter_mut().enumerate() {
                 *sample = frame[channel_index.min(1)];
             }

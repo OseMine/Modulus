@@ -10,15 +10,15 @@
 - [x] `modulus-core` shared DSP library (no nih_plug dependency)
 - [x] `modulus-synth` plugin crate (Modulus)
 - [x] `modulus-fx` plugin crate (Modulus FX)
-- [x] `xtask` bundling helper
+- [x] `xtask` bundling helper (cross-platform host layouts)
 - [x] Vendored `anymap` patch (upstream beta.2 broken with rustc 1.97, E0804)
 
 ## Phase 3: Code Extraction & Refactoring — DONE
 ### 3a Oscillators (variable-synth + Am-Synth) — DONE
-- [x] `Waveform` enum with all 8 waveform generators (Sine, Saw, Square, AnalogSaw, VASaw, AnalogSquare, VASquare, VintageSaw)
+- [x] `Waveform` enum with all 8 waveform generators
 - [x] `Oscillator` phase-accumulator (unified sine osc + phase loop)
 - [x] `FastRng` xorshift32 replacing RT-unsafe `rand::thread_rng()`
-- [x] `Voice` / `VoicePool` (8-voice, round-robin stealing, AM bridge from Am-Synth)
+- [x] `Voice` / `VoicePool` (8-voice, round-robin stealing, AM bridge)
 
 ### 3b Filter (variable-filter) — DONE
 - [x] `VariableFilter` with 4 models (Moog, Roland, LE13700, ARP 4075), zero-alloc
@@ -26,55 +26,50 @@
 - [x] Ladder filters unified into one implementation with per-model scale factor
 
 ### 3c Effects (variable-effects) — DONE
-- [x] `Chorus` (multi-voice modulated delay, ring buffers, stereo width)
-- [x] `Gain` (dB), `FxEngine` serial rack: in-gain -> filter -> chorus -> out-gain
+- [x] `Chorus` (real modulated delay line, stereo width)
+- [x] `Gain` (dB), `FxEngine` serial rack
 - [x] Removed `Vec` allocation + `Box<dyn Effect>` from process path
 
 ### 3d Params — DONE
-- [x] Flat prefixed IDs: `osc1_`, `osc2_`, `filt_`, `env_`, `fenv_`, `fx_`, `global_`
-- [x] `modulus-synth`: 29 params; `modulus-fx`: 14 params
-- [x] Param enum mapping (`ParamWaveform` -> core `Waveform`, etc.)
+- [x] Flat prefixed IDs (`osc1_`, `osc2_`, `filt_`, `env_`, `fenv_`, `fx_`, `global_`)
+- [x] `modulus-synth`: 29 params; `modulus-fx`: 14 params (+ editor state)
 
-## Phase 4: Build & Bundling — PARTIALLY DONE
+## Phase 4: Build & Bundling — DONE (DAW check deferred)
 - [x] Release build passes for both plugins (rustc 1.97.1)
-- [x] `cargo clippy` clean for all workspace crates
+- [x] `cargo clippy --workspace --all-targets -- -D warnings` clean
 - [x] `cargo run -p xtask --release bundle` produces VST3 + CLAP bundles
-- [ ] Runtime host verification (load in a DAW / plugin host to confirm `assert_process_allocs`)
-- [ ] **GUI: modern egui editor for Modulus (synth)** — user requested
-- [ ] **GUI: modern egui editor for Modulus FX** — user requested
+- [x] `scripts/build.ps1` / `scripts/build.sh` run the full gate (fmt, clippy, tests, bundle)
+- [ ] Runtime host verification in a DAW — deferred: no DAW on this machine (covered nightly by `--test` plugin_host)
 
-## Phase 5: Documentation & Delivery — PENDING
-- [ ] `README.md` at workspace root
-- [ ] `docs/ARCHITECTURE.md` — workspace/crate structure
-- [ ] `docs/MIGRATION.md` — how the 4 repos were merged (per-module mapping)
-- [ ] `docs/PARAMETERS.md` — full parameter ID mapping tables
-- [ ] `docs/BUILDING.md` — terminal commands to compile + bundle VST3/CLAP
-- [ ] Final delivery report (chat summary)
+## Phase 5: GUI Editors — DONE
+- [x] `nih_plug_egui` at pinned rev in workspace deps; `editor_state: Arc<EguiState>` (`#[persist]`) on both param sets
+- [x] `crates/modulus-synth/src/editor.rs`: header, collapsible sections (Oscillators, Filter, Amp Env, Filter Env, Chorus, Output), live voice-count meter
+- [x] `crates/modulus-fx/src/editor.rs`: header, sections (Filter, Chorus, Gain In/Out)
+- [x] `ParamSlider::for_param` rows, dark visuals, `create_egui_editor` wired into both `Plugin::editor()`
 
-## Phase 6: GitOps — PENDING
-- [ ] `build.yml` GitHub Actions workflow (CI: fmt, clippy, release build, bundle)
-- [ ] `release.yml` GitHub Actions workflow (tag-triggered; uses OpenCode via `anomalyco/opencode/github@latest`; bundles + uploads both plugins to a GitHub Release)
-- [ ] `opencode.yml` workflow already present (issue/PR comments via `/oc` or `/opencode`)
-- [ ] Commit all changes + push to `origin/main` (only when user confirms)
+## Phase 6: Module Engine — DONE
+- [x] Core engine: `AudioModule` trait + `ModuleGraph`, registry, native modules (3 osc types, filter, envelope, chorus, gain)
+- [x] Lua engine: `mlua 0.12` (lua54) patch compiler loading scripts at patch time (zero-alloc in `process()`)
+- [x] Plugin engine: stable C-ABI (`abi.rs`, magic `0x4D4F_4455`, API v1) + `DynamicModule` host via `libloading`
+- [x] `demo-module` reference compiled module (cdylib, no-unwind, `catch_unwind` + panic flag)
+- [x] Tests: 5 Lua + 1 plugin-host (live DLL load), all passing; `patch_player` example render verified
+- [x] `docs/MODULES.md` + `docs/LUA.md` explain how to add modules / write Lua patches
 
-## CURRENT STATE — IN PROGRESS (work resumed Aug 5, 2026)
-### GUI: egui editors — IN PROGRESS
-- [x] Add `nih_plug_egui` (git = same pinned nih-plug rev) to `[workspace.dependencies]`
-- [x] Add `nih_plug_egui` dep to `crates/modulus-synth/Cargo.toml` and `crates/modulus-fx/Cargo.toml`
-- [x] Add `editor_state: Arc<EguiState>` with `#[persist = "editor-state"]` to `ModulusParams` (synth, 640x520)
-- [x] Add `editor_state: Arc<EguiState>` with `#[persist = "editor-state"]` to `ModulusFxParams` (fx, 520x480)
-- [ ] Write `editor.rs` for Modulus (synth): header, collapsible sections (Oscillators, Filter, Amp Env, Filter Env, Chorus, Output), `ParamSlider::for_param` rows
-- [ ] Write `editor.rs` for Modulus FX: header, sections (Filter, Chorus, Gain In/Out), `ParamSlider::for_param` rows
-- [ ] Wire `fn editor(...)` into both `Plugin` impls via `create_egui_editor(...)`
-- [ ] Rebuild (`cargo build --release`), clippy, and re-bundle with xtask to verify
-- [ ] As easy as in workspace/variable-* to add new modules, etc
-- [ ] lua engine to build own modules (synth engines, filters, envelopes, fx, etc)
-- [ ] plugin engine to build modules like in lua, but more in depth (languages like rust or py can be compiled)
+## Phase 7: Documentation & Delivery — DONE
+- [x] `README.md` + `docs/{ARCHITECTURE,MIGRATION,PARAMETERS,BUILDING,MODULES,LUA}.md`
+
+## Phase 8: GitOps — DONE
+- [x] `new` branch merged into `main` (Cargo.lock conflict resolved)
+- [x] `.github/actions/setup` (toolchain+rust-cache), `.github/actions/checks`, `.github/actions/bundle` composite actions
+- [x] `build.yml`: 3-OS matrix running fmt/clippy/tests/bundle via the actions
+- [x] `release.yml`: tag-triggered, bundles + GitHub Release with OpenCode-generated notes
+- [x] `opencode.yml`: hardened (concurrency, write-permission check, timeout, bot guard) + `rust-check` job
+- [x] All changes committed + pushed to `origin/main`
 
 ## Open Questions / Notes
-- Original `Am-Synth` filter banks (carrier/modulator/global) were never wired into its audio path; consolidated as a single per-voice filter in Modulus
-- `variable-effects` chorus was a placeholder (`(sample_rate * rate).sin()` modulation); replaced with a real multi-tap modulated delay-line chorus
-- `Am-Synth` MIDI events were processed after audio (out of order); now sample-accurate in Modulus
-- `velocity` is already normalized `f32` at this nih-plug rev (no `/ 127.0` needed)
-- `editor_state.is_open()` is available to skip expensive GUI-only work while the window is closed
-- `crates/modulus-core/src/fx.rs` still has an uncommitted `Default` impl for `Chorus`/`FxEngine` (clippy fix) that must be included in the commit
+- `Am-Synth` filter banks were never wired into its audio path; consolidated as single per-voice filter
+- `variable-effects` chorus placeholder replaced with a real multi-tap modulated delay-line chorus
+- `Am-Synth` MIDI now processed sample-accurate
+- `velocity` already normalized `f32` at this nih-plug rev
+- `editor_state.is_open()` skips expensive GUI-only work while window is closed
+- Windows `linker_messages` warning during release bundle is benign MSVC export-lib noise

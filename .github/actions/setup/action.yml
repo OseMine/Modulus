@@ -1,0 +1,23 @@
+name: Set up Rust toolchain
+description: >-
+  Installs the pinned Rust toolchain (1.97) with clippy and rustfmt, plus the
+  shared cargo cache used by every rust job in this repo.
+
+inputs:
+  components:
+    description: Additional toolchain components (comma separated).
+    required: false
+    default: "clippy,rustfmt"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@1.97
+      with:
+        components: ${{ inputs.components }}
+
+    - name: Cache cargo registry and build output
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: . -> target

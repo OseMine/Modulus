@@ -4,6 +4,7 @@ use std::sync::Arc;
 use modulus_core::fx::{ChorusParams, FxEngine, FxFrameParams};
 use nih_plug::prelude::*;
 
+mod editor;
 mod params;
 use params::ModulusFxParams;
 
@@ -44,6 +45,10 @@ impl Plugin for ModulusFx {
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
+    }
+
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create_editor(self.params.clone())
     }
 
     fn initialize(

@@ -1,0 +1,26 @@
+name: Run rust checks
+description: >-
+  Compiles the workspace, runs fmt/clippy (with -D warnings) and the full
+  test suite including the plugin-host test against the demo module.
+  Intended for every rust job regardless of the workflow that hosts it.
+
+runs:
+  using: composite
+  steps:
+    - name: Check formatting
+      shell: bash
+      run: cargo fmt --all --check
+
+    - name: Run clippy with warnings as errors
+      shell: bash
+      run: cargo clippy --workspace --all-targets -- -D warnings
+
+    - name: Build demo module (plugin host fixture)
+      shell: bash
+      run: cargo build -p demo-module
+
+    - name: Run tests (including plugin host)
+      shell: bash
+      env:
+        MODULUS_DEMO_MODULE: ${{ runner.os == 'Windows' && format('{0}/target/debug/demo_module.dll', github.workspace) || (runner.os == 'macOS' && format('{0}/target/debug/libdemo_module.dylib', github.workspace) || format('{0}/target/debug/libdemo_module.so', github.workspace)) }}
+      run: cargo test --workspace

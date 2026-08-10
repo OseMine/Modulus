@@ -7,6 +7,10 @@
 //! This crate has two independent features, each of which provides an implementation providing
 //! types `Map`, `AnyMap`, `OccupiedEntry`, `VacantEntry`, `Entry` and `RawMap`:
 //!
+// Vendored copy of anymap 1.0.0-beta.2 with the E0804 trait-object cast
+// fixed. The `needless_lifetimes` lint (upstream code) is allowed so the
+// workspace can enforce `-D warnings` in CI.
+#![allow(clippy::needless_lifetimes)]
 #![cfg_attr(feature = "std", doc = " - **std** (default, *enabled* in this build):")]
 #![cfg_attr(not(feature = "std"), doc = " - **std** (default, *disabled* in this build):")]
 //!   an implementation using `std::collections::hash_map`, placed in the crate root

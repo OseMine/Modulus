@@ -6,4 +6,15 @@ license.workspace = true
 authors.workspace = true
 description = "Shared real-time-safe DSP library for the Modulus plugin family"
 
+[features]
+default = ["lua", "plugin-host"]
+# Lua-based module graph engine (mlua, Lua 5.4 vendored). Lua runs only at
+# patch-load time; the resulting graph is plain native Rust at render time.
+lua = ["dep:mlua"]
+# Runtime loading of third-party compiled modules (Rust/Python C extensions)
+# implementing the Modulus module C ABI.
+plugin-host = ["dep:libloading"]
+
 [dependencies]
+mlua = { version = "0.12", features = ["lua54", "vendored"], optional = true }
+libloading = { version = "0.9", optional = true }

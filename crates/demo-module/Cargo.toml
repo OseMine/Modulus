@@ -1,0 +1,13 @@
+[package]
+name = "demo-module"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Example compiled Modulus module (C ABI) - a simple oscillator"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+modulus-core = { workspace = true, default-features = false }

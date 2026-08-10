@@ -5,56 +5,40 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  fmt:
+  rust:
+    name: rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Rust toolchain
+        uses: ./.github/actions/setup
+
+      - name: Run rust checks
+        uses: ./.github/actions/checks
+
+      - name: Bundle VST3/CLAP
+        uses: ./.github/actions/bundle
+
+  complete:
+    name: CI complete
+    needs: rust
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.97
-        with:
-          components: rustfmt
-      - name: Check formatting
-        run: cargo fmt --all --check
-
-  clippy:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.97
-        with:
-          components: clippy
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-      - name: Run clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-
-  bundle:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.97
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-      - name: Build release and bundle VST3/CLAP
-        run: cargo run -p xtask --release bundle
-      - name: Upload bundles
-        uses: actions/upload-artifact@v4
-        with:
-          name: modulus-bundles
-          path: target/bundled
+      - name: All checks passed
+        run: echo "rust checks + bundles passed on all platforms"

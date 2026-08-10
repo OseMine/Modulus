@@ -50,4 +50,9 @@ impl SynthEngine {
         apply_gain_db(&mut frame, fx_params.gain_db);
         frame
     }
+
+    /// Number of voices currently sounding.
+    pub fn active_voices(&self) -> usize {
+        self.pool.active_voices()
+    }
 }

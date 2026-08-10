@@ -6,10 +6,12 @@
 //! callback. The only allocations in this crate happen in `set_sample_rate`,
 //! which is intended to be called from the plugin's `initialize()` hook.
 
+pub mod abi;
 pub mod envelope;
 pub mod filter;
 pub mod fx;
 pub mod midi;
+pub mod modules;
 pub mod oscillator;
 pub mod rng;
 pub mod synth;

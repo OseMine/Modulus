@@ -222,6 +222,12 @@ impl VoicePool {
         }
         output
     }
+
+    /// Number of voices currently sounding (used by the GUI to animate
+    /// polyphony).
+    pub fn active_voices(&self) -> usize {
+        self.voices.iter().filter(|v| v.active).count()
+    }
 }
 
 fn pitch_multiplier(semitones: i32) -> f32 {
