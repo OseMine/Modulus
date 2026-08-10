@@ -29,7 +29,7 @@ fn loads_and_runs_demo_module() {
     let mut module = unsafe { DynamicModule::open(Path::new(&path)) }
         .expect("demo module should load");
 
-    assert_eq!(module.kind(), ModuleKind::Oscillator);
+    assert_eq!(module.kind(), ModuleKind::SoundGen);
     assert_eq!(module.name(), "demo");
     assert_eq!(module.params().len(), 3);
     assert!(module.set_param("level", 0.5));

@@ -53,7 +53,7 @@ impl FilterModule {
 
 impl AudioModule for FilterModule {
     fn kind(&self) -> ModuleKind {
-        ModuleKind::Filter
+        ModuleKind::Fx
     }
 
     fn name(&self) -> &str {
@@ -108,5 +108,5 @@ impl AudioModule for FilterModule {
 
 pub fn register(registry: &mut ModuleRegistry) {
     let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(FilterModule::new("filter".into())) });
-    registry.register("filter", ModuleKind::Filter, builder);
+    registry.register("filter", ModuleKind::Fx, builder);
 }

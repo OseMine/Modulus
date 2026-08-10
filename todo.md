@@ -55,6 +55,17 @@
 - [x] Tests: 5 Lua + 1 plugin-host (live DLL load), all passing; `patch_player` example render verified
 - [x] `docs/MODULES.md` + `docs/LUA.md` explain how to add modules / write Lua patches
 
+## Phase 6b: Module Categories + Am-Synth Bridge — DONE
+- [x] `ModuleKind` split into categories: `SoundGen`, `Envelope`, `Modulator`, `Fx` (+ `is_source`, `label`)
+- [x] `native/` folder mirrors categories: `soundgen/`, `envelope/`, `modulator/`, `fx/`
+- [x] `registry.names_by_kind()` to enumerate a category (GUI palettes, docs)
+- [x] `am_bridge` sound generator added: `Am-Synth` carrier/modulator bridge with `Mix`/`AM` modes + `am_depth` (reuses the voice `Osc2Mode` architecture)
+- [x] `lfo` modulator added (free-running, depth 0..1, tremolo-ready)
+- [x] ABI kind constants renumbered to match (`SOUNDGEN=0`, `ENVELOPE=1`, `MODULATOR=2`, `FX=3`); host + demo-module + tests updated
+- [x] New tests: 9 category/bridge/LFO + 1 Lua bridge patch (16 total, all passing)
+- [x] `example_patch.lua` now showcases am_bridge + lfo; render peak 0.206, non-silent
+- [x] Docs updated (MODULES.md table + categories, LUA.md semantics, ARCHITECTURE.md)
+
 ## Phase 7: Documentation & Delivery — DONE
 - [x] `README.md` + `docs/{ARCHITECTURE,MIGRATION,PARAMETERS,BUILDING,MODULES,LUA}.md`
 

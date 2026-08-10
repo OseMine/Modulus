@@ -89,11 +89,16 @@ See [MODULES](MODULES.md) and [LUA](LUA.md) for the full API.
 
 - `AudioModule` trait: `kind/name/params/prepare/reset/note_on/note_off/
   set_param/process`.
-- `ModuleGraph`: ordered chain; `Oscillator` modules are sources (output is
-  added), everything else processes the frame in place.
+- `ModuleKind` categories: `SoundGen` (sources, output added into the
+  frame), `Envelope` + `Modulator` (gain curves multiplied into the frame,
+  note-gated vs free-running), `Fx` (frame modified in place). The
+  `native/` folder mirrors this: `soundgen/`, `envelope/`, `modulator/`,
+  `fx/`, and the C ABI kind constants map 1:1 to it.
 - Built-ins are thin wrappers around the existing DSP units; adding a new
   module is registering one builder (mirrors how the old `workspace/variable-*`
   repos each owned one DSP unit).
+- `am_bridge` is the `Am-Synth` carrier/modulator bridge (Mix or AM modes,
+  with `am_depth`) brought back as a sound generator module.
 - Lua patches are compiled at load time into a native graph; the Lua VM is
   never active in the render path.
 - Compiled modules implement the `modulus_module_*` C ABI and are loaded via

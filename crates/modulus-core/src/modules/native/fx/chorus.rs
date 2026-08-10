@@ -50,7 +50,7 @@ impl ChorusModule {
 
 impl AudioModule for ChorusModule {
     fn kind(&self) -> ModuleKind {
-        ModuleKind::Effect
+        ModuleKind::Fx
     }
 
     fn name(&self) -> &str {
@@ -113,5 +113,5 @@ impl AudioModule for ChorusModule {
 
 pub fn register(registry: &mut ModuleRegistry) {
     let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(ChorusModule::new("chorus".into())) });
-    registry.register("chorus", ModuleKind::Effect, builder);
+    registry.register("chorus", ModuleKind::Fx, builder);
 }

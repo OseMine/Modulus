@@ -10,14 +10,17 @@ time, so the render path keeps the usual real-time guarantees.
 return {
   name = "Deep Pad",
   modules = {
-    { kind = "oscillator", id = "osc1", waveform = 4, level = 0.5, pitch_semitones = 0 },
-    { kind = "oscillator", id = "osc2", waveform = 0, level = 0.2, pitch_semitones = 7 },
-    { kind = "filter",     id = "filt", filter_type = 0, cutoff = 2000, resonance = 0.3 },
-    { kind = "envelope",   id = "env",  attack = 0.05, decay = 0.2, sustain = 0.6,
+    { kind = "am_bridge", id = "bridge",
+      carrier_waveform = 4, carrier_level = 0.5, carrier_pitch = 0,
+      modulator_waveform = 0, modulator_level = 0.5, modulator_pitch = 7,
+      mode = 1, am_depth = 0.5 },
+    { kind = "lfo",       id = "trem", waveform = 0, rate_hz = 4, depth = 0.2 },
+    { kind = "envelope",  id = "env",  attack = 0.05, decay = 0.2, sustain = 0.6,
                                         release = 0.4 },
-    { kind = "chorus",     id = "ch",   dry_wet = 0.3, depth = 0.4, rate = 1.0,
+    { kind = "filter",    id = "filt", filter_type = 0, cutoff = 2000, resonance = 0.3 },
+    { kind = "chorus",    id = "ch",   dry_wet = 0.3, depth = 0.4, rate = 1.0,
                                         voices = 3, delay_ms = 12, width = 0.5 },
-    { kind = "gain",       id = "out",  gain_db = -6 },
+    { kind = "gain",      id = "out",  gain_db = -6 },
   },
 }
 ```
@@ -36,15 +39,18 @@ Optional:
 
 Each entry table:
 
-- `kind` (string, required): a registered module name. Built-ins:
-  `oscillator`, `oscillator2`, `filter`, `envelope`, `chorus`, `gain`.
+- `kind` (string, required): a registered module name. Built-ins by
+  category: **sound generators** — `oscillator`, `oscillator2`,
+  `am_bridge`; **envelope** — `envelope`; **modulator** — `lfo`;
+  **FX** — `filter`, `chorus`, `gain`.
 - Everything else is a parameter assignment; values may be numbers or
   numeric strings. Unknown parameter names are ignored.
 
 ## Semantics
 
-- **Order matters.** Oscillators are sources (output added into the frame);
-  all other modules process the frame in place, in listed order.
+- **Order matters.** Sound generators are sources (output added into the
+  frame); envelopes and modulators multiply gain into the frame; FX modules
+  process the frame in place, in listed order.
 - **Events.** `graph.note_on(note, velocity, tuning)` / `note_off(note)`
   are forwarded to every module (oscillators set frequency + gate,
   envelopes trigger/release).

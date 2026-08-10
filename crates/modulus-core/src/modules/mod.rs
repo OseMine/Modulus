@@ -22,22 +22,41 @@ pub mod registry;
 use registry::ModuleRegistry;
 
 /// What a module does in the signal chain.
+///
+/// Categories map 1:1 to the `native/` subfolders and to the ABI kind
+/// constants in [`crate::abi`]: `soundgen/` (sound generators), `envelope/`
+/// (note-gated amplitude shapers), `modulator/` (free-running modulators)
+/// and `fx/` (audio processors).
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum ModuleKind {
-    /// A sound source: ignores its input and adds its output to the frame.
-    Oscillator,
-    /// Shapes an incoming signal.
-    Filter,
-    /// Generates a gain curve that is multiplied into the frame.
+    /// A sound generator (synth voice, oscillator, AM bridge): a signal
+    /// source whose output is added into the frame.
+    SoundGen,
+    /// A note-gated amplitude shaper (ADSR, ...): multiplies a gain curve
+    /// into the frame.
     Envelope,
-    /// Any other effect on the frame.
-    Effect,
+    /// A free-running modulation source (LFO, ...): multiplies a slowly
+    /// varying signal into the frame.
+    Modulator,
+    /// An audio processor/effect (filter, chorus, gain, ...): shapes the
+    /// frame in place.
+    Fx,
 }
 
 impl ModuleKind {
     /// Whether the module is a signal source instead of a processor.
     pub fn is_source(self) -> bool {
-        matches!(self, ModuleKind::Oscillator)
+        matches!(self, ModuleKind::SoundGen)
+    }
+
+    /// Human-readable category name (used by docs and editors).
+    pub const fn label(self) -> &'static str {
+        match self {
+            ModuleKind::SoundGen => "Sound Generator",
+            ModuleKind::Envelope => "Envelope",
+            ModuleKind::Modulator => "Modulator",
+            ModuleKind::Fx => "FX",
+        }
     }
 }
 
@@ -130,8 +149,9 @@ pub trait AudioModule: Send {
 
 /// An ordered chain of modules that processes stereo frames.
 ///
-/// Oscillators act as sources (their output is added into the frame),
-/// everything else processes the frame in order.
+/// Sound generators act as sources (their output is added into the frame),
+/// envelopes and modulators multiply gain curves into the frame, and FX
+/// modules process the frame in order.
 pub struct ModuleGraph {
     modules: Vec<Box<dyn AudioModule>>,
 }

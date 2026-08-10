@@ -9,7 +9,7 @@ use std::os::raw::{c_char, c_void};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use modulus_core::abi::{
-    ModulusModuleInfo, MODULUS_API_VERSION, MODULUS_KIND_OSCILLATOR, MODULUS_MODULE_MAGIC,
+    ModulusModuleInfo, MODULUS_API_VERSION, MODULUS_KIND_SOUNDGEN, MODULUS_MODULE_MAGIC,
 };
 
 const PARAM_COUNT: u32 = 3;
@@ -32,7 +32,7 @@ static PARAM_NAMES_C: NameArray = NameArray([
 static INFO: ModulusModuleInfo = ModulusModuleInfo {
     magic: MODULUS_MODULE_MAGIC,
     api_version: MODULUS_API_VERSION,
-    kind: MODULUS_KIND_OSCILLATOR,
+    kind: MODULUS_KIND_SOUNDGEN,
     param_count: PARAM_COUNT,
     name: NAME_CSTR.as_ptr() as *const c_char,
     param_names: PARAM_NAMES_C.0.as_ptr(),

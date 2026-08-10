@@ -26,7 +26,7 @@ impl GainModule {
 
 impl AudioModule for GainModule {
     fn kind(&self) -> ModuleKind {
-        ModuleKind::Effect
+        ModuleKind::Fx
     }
 
     fn name(&self) -> &str {
@@ -69,5 +69,5 @@ impl AudioModule for GainModule {
 
 pub fn register(registry: &mut ModuleRegistry) {
     let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(GainModule::new("gain".into())) });
-    registry.register("gain", ModuleKind::Effect, builder);
+    registry.register("gain", ModuleKind::Fx, builder);
 }

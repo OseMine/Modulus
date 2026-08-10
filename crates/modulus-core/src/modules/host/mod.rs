@@ -5,8 +5,8 @@
 //! Loading happens once at setup time, never inside the audio callback.
 
 pub use crate::abi::{
-    ModulusModuleInfo, MODULUS_API_VERSION, MODULUS_KIND_EFFECT, MODULUS_KIND_ENVELOPE,
-    MODULUS_KIND_FILTER, MODULUS_KIND_OSCILLATOR, MODULUS_MODULE_MAGIC,
+    ModulusModuleInfo, MODULUS_API_VERSION, MODULUS_KIND_ENVELOPE, MODULUS_KIND_FX,
+    MODULUS_KIND_MODULATOR, MODULUS_KIND_SOUNDGEN, MODULUS_MODULE_MAGIC,
 };
 
 use std::ffi::CStr;
@@ -70,11 +70,11 @@ impl DynamicModule {
                 .to_string()
         };
 
-        let kind = match info.kind {
-            MODULUS_KIND_OSCILLATOR => ModuleKind::Oscillator,
-            MODULUS_KIND_FILTER => ModuleKind::Filter,
+let kind = match info.kind {
+            MODULUS_KIND_SOUNDGEN => ModuleKind::SoundGen,
             MODULUS_KIND_ENVELOPE => ModuleKind::Envelope,
-            MODULUS_KIND_EFFECT => ModuleKind::Effect,
+            MODULUS_KIND_MODULATOR => ModuleKind::Modulator,
+            MODULUS_KIND_FX => ModuleKind::Fx,
             other => {
                 return Err(ModuleError::Dynamic(format!(
                     "unknown module kind {other}"

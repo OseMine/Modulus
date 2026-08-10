@@ -17,10 +17,17 @@ pub const MODULUS_MODULE_MAGIC: u32 = 0x4D4F_4455;
 /// Bump when incompatible ABI changes are made.
 pub const MODULUS_API_VERSION: u32 = 1;
 
-pub const MODULUS_KIND_OSCILLATOR: u32 = 0;
-pub const MODULUS_KIND_FILTER: u32 = 1;
-pub const MODULUS_KIND_ENVELOPE: u32 = 2;
-pub const MODULUS_KIND_EFFECT: u32 = 3;
+/// Module kind constants. The values are part of the stable ABI; they
+/// mirror [`crate::modules::ModuleKind`]:
+///
+/// - `0` = sound generator (oscillator, AM bridge, ...)
+/// - `1` = envelope (note-gated amplitude shaper)
+/// - `2` = modulator (free-running LFO, ...)
+/// - `3` = FX (audio processor)
+pub const MODULUS_KIND_SOUNDGEN: u32 = 0;
+pub const MODULUS_KIND_ENVELOPE: u32 = 1;
+pub const MODULUS_KIND_MODULATOR: u32 = 2;
+pub const MODULUS_KIND_FX: u32 = 3;
 
 /// Module descriptor returned by `modulus_module_info`.
 #[repr(C)]

@@ -47,4 +47,12 @@ impl ModuleRegistry {
             .find(|(n, _, _)| n == name)
             .map(|(_, k, _)| *k)
     }
+
+    /// All registered module names in one category (e.g. every `SoundGen`).
+    pub fn names_by_kind(&self, kind: ModuleKind) -> impl Iterator<Item = &str> {
+        self.entries
+            .iter()
+            .filter(move |(_, k, _)| *k == kind)
+            .map(|(n, _, _)| n.as_str())
+    }
 }

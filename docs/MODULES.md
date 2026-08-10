@@ -19,7 +19,7 @@ Three ways to get a module:
 
 ```rust
 pub trait AudioModule: Send {
-    fn kind(&self) -> ModuleKind;            // Oscillator | Filter | Envelope | Effect
+    fn kind(&self) -> ModuleKind;            // SoundGen | Envelope | Modulator | Fx
     fn name(&self) -> &str;                  // instance id
     fn rename(&mut self, id: &str) {}        // patch compiler support
     fn prepare(&mut self, sample_rate: f32); // may allocate, not RT
@@ -33,19 +33,64 @@ pub trait AudioModule: Send {
 }
 ```
 
-`ModuleGraph::process_frame` treats `ModuleKind::Oscillator` as a **source**
-(its output is added into the frame) and everything else as a processor
-(frame modified in place), in the order the modules were added.
+## Module categories
+
+Modules are grouped into four categories (`ModuleKind`), each with its own
+`native/` subfolder and ABI kind constant — so a sound generator, an
+envelope, an LFO and a filter are first-class, distinct things:
+
+| Category | `ModuleKind` | Folder | Signal role |
+| -------- | ------------ | ------ | ----------- |
+| Sound generators | `SoundGen` | `native/soundgen/` | source: output **added into** the frame |
+| Envelopes | `Envelope` | `native/envelope/` | note-gated gain curve **multiplied into** the frame |
+| Modulators | `Modulator` | `native/modulator/` | free-running signal **multiplied into** the frame |
+| FX | `Fx` | `native/fx/` | processors: frame **modified in place** |
+
+`ModuleGraph::process_frame` applies sources first, then multipliers, then
+FX processors, in the order the modules were added. `ModuleRegistry` has
+helper accessors:
+
+```rust
+registry.kind_of("am_bridge");                       // Some(ModuleKind::SoundGen)
+registry.names_by_kind(ModuleKind::Fx);              // filter, chorus, gain
+```
+
+Add a new module to a category by putting it in that folder and calling its
+`register()` from the folder's `mod.rs`; category membership is just the
+`ModuleKind` it registers with.
 
 ## Built-in modules
 
-| Name | Kind | Params |
-| ---- | ---- | ------ |
-| `oscillator` / `oscillator2` | Oscillator | `waveform` (0–7), `level`, `pitch_semitones` |
-| `filter` | Filter | `filter_type` (0–3), `cutoff`, `resonance`, `smoothing_ms` |
-| `envelope` | Envelope | `attack`, `decay`, `sustain`, `release` |
-| `chorus` | Effect | `dry_wet`, `depth`, `rate`, `voices`, `delay_ms`, `width` |
-| `gain` | Effect | `gain_db` |
+### Sound generators — `soundgen/` (`SoundGen`)
+
+| Name | Params |
+| ---- | ------ |
+| `oscillator` / `oscillator2` | `waveform` (0–7), `level`, `pitch_semitones` |
+| `am_bridge` | carrier/modulator pair bridged like the `Am-Synth` voice: `carrier_waveform` (0–7), `carrier_level`, `carrier_pitch`, `modulator_waveform` (0–7), `modulator_level`, `modulator_pitch`, `mode` (0 = Mix, 1 = AM), `am_depth` (0–1) |
+
+### Envelopes — `envelope/` (`Envelope`)
+
+| Name | Params |
+| ---- | ------ |
+| `envelope` | `attack`, `decay`, `sustain`, `release` |
+
+### Modulators — `modulator/` (`Modulator`)
+
+| Name | Params |
+| ---- | ------ |
+| `lfo` | `waveform` (0–7), `rate_hz` (0.01–20), `depth` (0–1) |
+
+Free-running (ignores note events): at `depth = 0` it is a passthrough, at
+`depth = 1` the frame swells between silence and unity at `rate_hz`
+(perfect for tremolo).
+
+### FX — `fx/` (`Fx`)
+
+| Name | Params |
+| ---- | ------ |
+| `filter` | `filter_type` (0–3), `cutoff`, `resonance`, `smoothing_ms` |
+| `chorus` | `dry_wet`, `depth`, `rate`, `voices`, `delay_ms`, `width` |
+| `gain` | `gain_db` |
 
 All values are floats by design (Lua/ABI friendly).
 
@@ -66,7 +111,7 @@ impl AudioModule for FlangerModule { /* ... */ }
 fn register(registry: &mut ModuleRegistry) {
     registry.register(
         "flanger",
-        ModuleKind::Effect,
+        ModuleKind::Fx,
         Arc::new(|| -> Box<dyn AudioModule> { Box::new(FlangerModule::new()) }),
     );
 }

@@ -107,3 +107,25 @@ fn unknown_module_is_rejected() {
         Err(other) => panic!("expected UnknownModule error, got {other:?}"),
     }
 }
+
+#[test]
+fn lua_patch_with_bridge_and_lfo_compiles() {
+    let registry = builtin_registry();
+    let bridge_patch = r#"
+return {
+  name = "Bridge Test",
+  modules = {
+    { kind = "am_bridge", id = "bridge", carrier_waveform = 4, am_depth = 0.8 },
+    { kind = "lfo", id = "trem", rate_hz = 5, depth = 0.3 },
+    { kind = "envelope", id = "env" },
+    { kind = "gain", id = "out", gain_db = -12 },
+  },
+}
+"#;
+    let mut graph = lua::build_patch(&registry, bridge_patch).expect("patch should compile");
+    assert_eq!(graph.len(), 4);
+    assert!(graph.module_names().contains(&"bridge"));
+    assert!(graph.set_param("bridge", "am_depth", 0.9));
+    assert!(graph.set_param("trem", "depth", 0.5));
+    assert!(!graph.set_param("bridge", "nope", 0.0));
+}
