@@ -35,6 +35,10 @@ jobs:
       - name: Bundle VST3/CLAP
         uses: ./.github/actions/bundle
 
+      - name: Build Windows installer
+        if: matrix.os == 'windows-latest'
+        uses: ./.github/actions/installer
+
   complete:
     name: CI complete
     needs: rust

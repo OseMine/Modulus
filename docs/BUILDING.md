@@ -84,10 +84,13 @@ MODULUS_PATCH=scripts/lua/example_patch.lua MODULUS_OUTPUT=out.wav \
 
 `.github/workflows/build.yml` runs on every push/PR (Linux, Windows, macOS):
 fmt check, clippy `-D warnings`, full test suite, release bundle, artifact
-upload. `.github/workflows/release.yml` runs on version tags and attaches
-bundles to the GitHub Release; `.github/workflows/opencode.yml` lets OpenCode
-act on `/oc` / `/opencode` comments. Shared build logic lives in
-`.github/actions/`.
+upload. On Windows it additionally builds a `Modulus-Installer-<version>.exe`
+(Inno Setup) that installs the VST3/CLAP bundles into the shared
+`C:\Program Files\Common Files\{VST3,CLAP}` directories, uploaded as the
+`modulus-installer-windows` artifact. `.github/workflows/release.yml` runs on
+version tags and attaches bundles to the GitHub Release;
+`.github/workflows/opencode.yml` lets OpenCode act on `/oc` / `/opencode`
+comments. Shared build logic lives in `.github/actions/`.
 
 ## Troubleshooting
 
