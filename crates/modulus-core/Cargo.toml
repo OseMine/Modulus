@@ -7,14 +7,18 @@ authors.workspace = true
 description = "Shared real-time-safe DSP library for the Modulus plugin family"
 
 [features]
-default = ["lua", "plugin-host"]
+default = ["lua", "plugin-host", "setup"]
 # Lua-based module graph engine (mlua, Lua 5.4 vendored). Lua runs only at
 # patch-load time; the resulting graph is plain native Rust at render time.
 lua = ["dep:mlua"]
 # Runtime loading of third-party compiled modules (Rust/Python C extensions)
 # implementing the Modulus module C ABI.
 plugin-host = ["dep:libloading"]
+# JSON synth setup configs (topology + routing + optional module models).
+setup = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
 mlua = { version = "0.12", features = ["lua54", "vendored"], optional = true }
 libloading = { version = "0.9", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }

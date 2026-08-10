@@ -43,8 +43,7 @@ impl DynamicModule {
     /// The library must export the Modulus module ABI symbols and must
     /// implement them correctly; this is a trust boundary.
     pub unsafe fn open(path: &Path) -> Result<Self, ModuleError> {
-        let lib = Library::new(path)
-            .map_err(|err| ModuleError::Dynamic(err.to_string()))?;
+        let lib = Library::new(path).map_err(|err| ModuleError::Dynamic(err.to_string()))?;
 
         let info_fn: libloading::Symbol<'_, crate::abi::exports::ModulusModuleInfoFn> = lib
             .get(crate::abi::SYMBOL_INFO)
@@ -70,16 +69,12 @@ impl DynamicModule {
                 .to_string()
         };
 
-let kind = match info.kind {
+        let kind = match info.kind {
             MODULUS_KIND_SOUNDGEN => ModuleKind::SoundGen,
             MODULUS_KIND_ENVELOPE => ModuleKind::Envelope,
             MODULUS_KIND_MODULATOR => ModuleKind::Modulator,
             MODULUS_KIND_FX => ModuleKind::Fx,
-            other => {
-                return Err(ModuleError::Dynamic(format!(
-                    "unknown module kind {other}"
-                )))
-            }
+            other => return Err(ModuleError::Dynamic(format!("unknown module kind {other}"))),
         };
 
         let mut param_specs = Vec::with_capacity(info.param_count as usize);
@@ -107,9 +102,9 @@ let kind = match info.kind {
         let prepare: crate::abi::exports::ModulusModulePrepareFn = *lib
             .get(crate::abi::SYMBOL_PREPARE)
             .map_err(|err| ModuleError::Dynamic(format!("missing prepare symbol: {err}")))?;
-        let reset: crate::abi::exports::ModulusModuleResetFn = *lib
-            .get(crate::abi::SYMBOL_RESET)
-            .map_err(|err| ModuleError::Dynamic(format!("missing reset symbol: {err}")))?;
+        let reset: crate::abi::exports::ModulusModuleResetFn =
+            *lib.get(crate::abi::SYMBOL_RESET)
+                .map_err(|err| ModuleError::Dynamic(format!("missing reset symbol: {err}")))?;
         let process: crate::abi::exports::ModulusModuleProcessFn = *lib
             .get(crate::abi::SYMBOL_PROCESS)
             .map_err(|err| ModuleError::Dynamic(format!("missing process symbol: {err}")))?;
@@ -165,11 +160,7 @@ impl AudioModule for DynamicModule {
     }
 
     fn set_param(&mut self, name: &str, value: f32) -> bool {
-        match self
-            .param_specs
-            .iter()
-            .position(|spec| spec.name == name)
-        {
+        match self.param_specs.iter().position(|spec| spec.name == name) {
             Some(index) => {
                 self.param_values[index] = value;
                 true
@@ -199,4 +190,3 @@ impl AudioModule for DynamicModule {
         }
     }
 }
-

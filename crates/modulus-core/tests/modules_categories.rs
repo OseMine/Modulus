@@ -73,7 +73,10 @@ fn am_bridge_mix_mode_sums_carrier_and_modulator() {
     assert!(bridge.set_param("modulator_pitch", 0.0));
 
     let (peak, _) = render(&mut bridge, 2048, true);
-    assert!(peak > 1.9, "mix mode should sum both oscillators, peak {peak}");
+    assert!(
+        peak > 1.9,
+        "mix mode should sum both oscillators, peak {peak}"
+    );
 }
 
 #[test]
@@ -86,7 +89,10 @@ fn am_bridge_am_mode_depth_zero_is_carrier_only() {
 
     let (peak, _) = render(&mut bridge, 4096, true);
     // Pure carrier at level 1: sine stays within [-1, 1].
-    assert!(peak > 0.9 && peak <= 1.0, "depth 0 should be carrier only, peak {peak}");
+    assert!(
+        peak > 0.9 && peak <= 1.0,
+        "depth 0 should be carrier only, peak {peak}"
+    );
 }
 
 #[test]

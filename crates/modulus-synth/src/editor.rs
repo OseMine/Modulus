@@ -69,8 +69,9 @@ pub fn create_editor(
                             .weak(),
                     );
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let voices =
-                            design_state.voice_count.load(std::sync::atomic::Ordering::Relaxed);
+                        let voices = design_state
+                            .voice_count
+                            .load(std::sync::atomic::Ordering::Relaxed);
                         let color = if voices > 0 {
                             ACCENT
                         } else {
@@ -88,53 +89,169 @@ pub fn create_editor(
                     ui.spacing_mut().slider_width = 280.0;
 
                     section(ui, "Global", |ui| {
-                        slider_row(ui, "Tuning", widgets::ParamSlider::for_param(&params.global_tuning, setter));
+                        slider_row(
+                            ui,
+                            "Tuning",
+                            widgets::ParamSlider::for_param(&params.global_tuning, setter),
+                        );
                     });
 
                     section(ui, "Oscillator 1", |ui| {
-                        slider_row(ui, "Waveform", widgets::ParamSlider::for_param(&params.osc1_waveform, setter));
-                        slider_row(ui, "Level", widgets::ParamSlider::for_param(&params.osc1_level, setter));
-                        slider_row(ui, "Pitch", widgets::ParamSlider::for_param(&params.osc1_pitch, setter));
+                        slider_row(
+                            ui,
+                            "Waveform",
+                            widgets::ParamSlider::for_param(&params.osc1_waveform, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Level",
+                            widgets::ParamSlider::for_param(&params.osc1_level, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Pitch",
+                            widgets::ParamSlider::for_param(&params.osc1_pitch, setter),
+                        );
                     });
 
                     section(ui, "Oscillator 2", |ui| {
-                        slider_row(ui, "Waveform", widgets::ParamSlider::for_param(&params.osc2_waveform, setter));
-                        slider_row(ui, "Level", widgets::ParamSlider::for_param(&params.osc2_level, setter));
-                        slider_row(ui, "Pitch", widgets::ParamSlider::for_param(&params.osc2_pitch, setter));
-                        slider_row(ui, "Mode", widgets::ParamSlider::for_param(&params.osc2_mode, setter));
-                        slider_row(ui, "AM Depth", widgets::ParamSlider::for_param(&params.osc2_am_depth, setter));
+                        slider_row(
+                            ui,
+                            "Waveform",
+                            widgets::ParamSlider::for_param(&params.osc2_waveform, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Level",
+                            widgets::ParamSlider::for_param(&params.osc2_level, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Pitch",
+                            widgets::ParamSlider::for_param(&params.osc2_pitch, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Mode",
+                            widgets::ParamSlider::for_param(&params.osc2_mode, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "AM Depth",
+                            widgets::ParamSlider::for_param(&params.osc2_am_depth, setter),
+                        );
                     });
 
                     section(ui, "Filter", |ui| {
-                        slider_row(ui, "Type", widgets::ParamSlider::for_param(&params.filt_type, setter));
-                        slider_row(ui, "Cutoff", widgets::ParamSlider::for_param(&params.filt_cutoff, setter));
-                        slider_row(ui, "Resonance", widgets::ParamSlider::for_param(&params.filt_resonance, setter));
-                        slider_row(ui, "Env Amount", widgets::ParamSlider::for_param(&params.filt_env_amount, setter));
+                        slider_row(
+                            ui,
+                            "Type",
+                            widgets::ParamSlider::for_param(&params.filt_type, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Cutoff",
+                            widgets::ParamSlider::for_param(&params.filt_cutoff, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Resonance",
+                            widgets::ParamSlider::for_param(&params.filt_resonance, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Env Amount",
+                            widgets::ParamSlider::for_param(&params.filt_env_amount, setter),
+                        );
                     });
 
                     section(ui, "Amp Envelope", |ui| {
-                        slider_row(ui, "Attack", widgets::ParamSlider::for_param(&params.env_attack, setter));
-                        slider_row(ui, "Decay", widgets::ParamSlider::for_param(&params.env_decay, setter));
-                        slider_row(ui, "Sustain", widgets::ParamSlider::for_param(&params.env_sustain, setter));
-                        slider_row(ui, "Release", widgets::ParamSlider::for_param(&params.env_release, setter));
+                        slider_row(
+                            ui,
+                            "Attack",
+                            widgets::ParamSlider::for_param(&params.env_attack, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Decay",
+                            widgets::ParamSlider::for_param(&params.env_decay, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Sustain",
+                            widgets::ParamSlider::for_param(&params.env_sustain, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Release",
+                            widgets::ParamSlider::for_param(&params.env_release, setter),
+                        );
                     });
 
                     section(ui, "Filter Envelope", |ui| {
-                        slider_row(ui, "Attack", widgets::ParamSlider::for_param(&params.fenv_attack, setter));
-                        slider_row(ui, "Decay", widgets::ParamSlider::for_param(&params.fenv_decay, setter));
-                        slider_row(ui, "Sustain", widgets::ParamSlider::for_param(&params.fenv_sustain, setter));
-                        slider_row(ui, "Release", widgets::ParamSlider::for_param(&params.fenv_release, setter));
+                        slider_row(
+                            ui,
+                            "Attack",
+                            widgets::ParamSlider::for_param(&params.fenv_attack, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Decay",
+                            widgets::ParamSlider::for_param(&params.fenv_decay, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Sustain",
+                            widgets::ParamSlider::for_param(&params.fenv_sustain, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Release",
+                            widgets::ParamSlider::for_param(&params.fenv_release, setter),
+                        );
                     });
 
                     section(ui, "Chorus / Output", |ui| {
-                        slider_row(ui, "Enable", widgets::ParamSlider::for_param(&params.fx_enable, setter));
-                        slider_row(ui, "Dry/Wet", widgets::ParamSlider::for_param(&params.fx_chorus_dry_wet, setter));
-                        slider_row(ui, "Depth", widgets::ParamSlider::for_param(&params.fx_chorus_depth, setter));
-                        slider_row(ui, "Rate", widgets::ParamSlider::for_param(&params.fx_chorus_rate, setter));
-                        slider_row(ui, "Voices", widgets::ParamSlider::for_param(&params.fx_chorus_voices, setter));
-                        slider_row(ui, "Delay", widgets::ParamSlider::for_param(&params.fx_chorus_delay, setter));
-                        slider_row(ui, "Width", widgets::ParamSlider::for_param(&params.fx_chorus_width, setter));
-                        slider_row(ui, "Output Gain", widgets::ParamSlider::for_param(&params.fx_gain, setter));
+                        slider_row(
+                            ui,
+                            "Enable",
+                            widgets::ParamSlider::for_param(&params.fx_enable, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Dry/Wet",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_dry_wet, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Depth",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_depth, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Rate",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_rate, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Voices",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_voices, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Delay",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_delay, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Width",
+                            widgets::ParamSlider::for_param(&params.fx_chorus_width, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Output Gain",
+                            widgets::ParamSlider::for_param(&params.fx_gain, setter),
+                        );
                     });
                 });
             });

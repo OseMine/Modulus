@@ -1,0 +1,26 @@
+{
+  "name": "Default 4-Osc",
+  "soundgens": [
+    { "params": { "waveform": 4, "level": 0.25, "pitch_semitones": 0 } },
+    { "params": { "waveform": 0, "level": 0.25, "pitch_semitones": 7 } },
+    { "params": { "waveform": 1, "level": 0.2, "pitch_semitones": -5 } },
+    { "params": { "waveform": 4, "level": 0.18, "pitch_semitones": 12 } }
+  ],
+  "mixer": { "output_level": 1.0 },
+  "filter": {
+    "params": { "filter_type": 0, "cutoff": 2000, "resonance": 0.25 },
+    "pregain_db": 0.0
+  },
+  "amp_envelope": {
+    "params": { "attack": 0.01, "decay": 0.1, "sustain": 0.6, "release": 0.2 }
+  },
+  "filter_envelope": {
+    "params": { "attack": 0.02, "decay": 0.3, "sustain": 0.4, "release": 0.4 },
+    "contour_octaves": 2.0
+  },
+  "modulator": {
+    "params": { "waveform": 0, "rate_hz": 4.0, "depth": 0.7 },
+    "to_amp": 0.12,
+    "to_filter_octaves": 1.0
+  }
+}

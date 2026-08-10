@@ -91,6 +91,8 @@ pub enum ModuleError {
     Dynamic(String),
     /// The Lua patch failed to compile or evaluate.
     Lua(String),
+    /// A synth setup config failed to parse, build or route.
+    Setup(String),
 }
 
 impl std::fmt::Display for ModuleError {
@@ -100,6 +102,7 @@ impl std::fmt::Display for ModuleError {
             ModuleError::UnknownParam(name) => write!(f, "unknown parameter: {name}"),
             ModuleError::Dynamic(msg) => write!(f, "dynamic module error: {msg}"),
             ModuleError::Lua(msg) => write!(f, "lua patch error: {msg}"),
+            ModuleError::Setup(msg) => write!(f, "synth setup error: {msg}"),
         }
     }
 }
@@ -140,6 +143,17 @@ pub trait AudioModule: Send {
 
     /// The current value of a parameter, if it exists.
     fn param_value(&self, name: &str) -> Option<f32>;
+
+    /// The module's current modulation/CV value, read after the latest
+    /// [`AudioModule::process`] call advanced it.
+    ///
+    /// `1.0` means "no contribution" and is the default for modules that do
+    /// not generate modulation. Envelopes expose their current 0..1 stage
+    /// value; modulators expose the gain they currently apply (0..1,
+    /// `1 - depth` at the LFO trough, `1.0` at `depth = 0`).
+    fn cv(&self) -> f32 {
+        1.0
+    }
 
     /// Process one stereo frame. Source modules are handed a zeroed frame
     /// and must write their output into it; processors modify the frame in
@@ -191,12 +205,7 @@ impl ModuleGraph {
     }
 
     /// Process one stereo frame through the whole chain.
-    pub fn process_frame(
-        &mut self,
-        frame: &mut [f32; 2],
-        events: &ModuleEvents,
-        sample_rate: f32,
-    ) {
+    pub fn process_frame(&mut self, frame: &mut [f32; 2], events: &ModuleEvents, sample_rate: f32) {
         for module in &mut self.modules {
             if module.kind().is_source() {
                 let mut source_frame = [0.0; 2];
@@ -216,11 +225,7 @@ impl ModuleGraph {
 
     /// Set a named parameter on a named module instance.
     pub fn set_param(&mut self, module_name: &str, param_name: &str, value: f32) -> bool {
-        match self
-            .modules
-            .iter_mut()
-            .find(|m| m.name() == module_name)
-        {
+        match self.modules.iter_mut().find(|m| m.name() == module_name) {
             Some(module) => module.set_param(param_name, value),
             None => false,
         }

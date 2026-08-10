@@ -26,6 +26,9 @@ and a real-time-safe DSP core that was consolidated from four older plugins
 - **Module engine**: trait-based `AudioModule` API, Lua patch compiler, and a
   C-ABI plugin host for compiled third-party modules (Rust/C/C++/Python
   extensions)
+- **Synth setup configs**: JSON files defining the synth topology and routing
+  (4 soundgens → mixer → filter with pregain → amp/filter envelopes with
+  contour → modulator with amp/filter amounts)
 - egui editors with persisted window size
 
 ## Workspace layout
@@ -72,6 +75,7 @@ Windows/macOS/Linux one-shot scripts:
 - [BUILDING](docs/BUILDING.md) — toolchain, scripts, CI, bundling
 - [MODULES](docs/MODULES.md) — writing native/Lua/compiled modules
 - [LUA](docs/LUA.md) — Lua patch format reference
+- [SETUPS](docs/SETUPS.md) — synth setup JSON configs and routing
 
 ## Testing
 

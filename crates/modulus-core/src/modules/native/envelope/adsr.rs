@@ -12,10 +12,22 @@ pub const SUSTAIN: &str = "sustain";
 pub const RELEASE: &str = "release";
 
 const PARAMS: &[ModuleParamSpec] = &[
-    ModuleParamSpec { name: ATTACK, default: 0.01 },
-    ModuleParamSpec { name: DECAY, default: 0.1 },
-    ModuleParamSpec { name: SUSTAIN, default: 0.5 },
-    ModuleParamSpec { name: RELEASE, default: 0.1 },
+    ModuleParamSpec {
+        name: ATTACK,
+        default: 0.01,
+    },
+    ModuleParamSpec {
+        name: DECAY,
+        default: 0.1,
+    },
+    ModuleParamSpec {
+        name: SUSTAIN,
+        default: 0.5,
+    },
+    ModuleParamSpec {
+        name: RELEASE,
+        default: 0.1,
+    },
 ];
 
 pub struct EnvelopeModule {
@@ -26,6 +38,7 @@ pub struct EnvelopeModule {
     sustain: f32,
     release: f32,
     sample_rate: f32,
+    last_amp: f32,
 }
 
 impl EnvelopeModule {
@@ -38,11 +51,13 @@ impl EnvelopeModule {
             sustain: 0.5,
             release: 0.1,
             sample_rate: 44_100.0,
+            last_amp: 0.0,
         }
     }
 
     fn update_env(&mut self) {
-        self.env.set_params(self.attack, self.decay, self.sustain, self.release);
+        self.env
+            .set_params(self.attack, self.decay, self.sustain, self.release);
     }
 }
 
@@ -105,12 +120,18 @@ impl AudioModule for EnvelopeModule {
 
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, _sample_rate: f32) {
         let amp = self.env.process();
+        self.last_amp = amp;
         frame[0] *= amp;
         frame[1] *= amp;
+    }
+
+    fn cv(&self) -> f32 {
+        self.last_amp
     }
 }
 
 pub fn register(registry: &mut ModuleRegistry) {
-    let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(EnvelopeModule::new("env".into())) });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(EnvelopeModule::new("env".into())) });
     registry.register("envelope", ModuleKind::Envelope, builder);
 }

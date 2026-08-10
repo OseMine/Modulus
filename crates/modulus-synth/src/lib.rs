@@ -50,7 +50,7 @@ impl Default for Modulus {
 
 impl Plugin for Modulus {
     const NAME: &'static str = "Modulus";
-    const VENDOR: &'static str = "The Muzikar";
+    const VENDOR: &'static str = "OskarFX";
     const URL: &'static str = "";
     const EMAIL: &'static str = "";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -183,10 +183,8 @@ impl ClapPlugin for Modulus {
 
 impl Vst3Plugin for Modulus {
     const VST3_CLASS_ID: [u8; 16] = *b"ModulusSynth....";
-    const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[
-        Vst3SubCategory::Instrument,
-        Vst3SubCategory::Synth,
-    ];
+    const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
+        &[Vst3SubCategory::Instrument, Vst3SubCategory::Synth];
 }
 
 nih_export_clap!(Modulus);

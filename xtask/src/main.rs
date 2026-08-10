@@ -3,10 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const PLUGINS: &[(&str, &str)] = &[
-    ("modulus-synth", "Modulus"),
-    ("modulus-fx", "Modulus FX"),
-];
+const PLUGINS: &[(&str, &str)] = &[("modulus-synth", "Modulus"), ("modulus-fx", "Modulus FX")];
 
 /// Per-host-OS artifact layout (file name suffix, VST3 Contents subdir).
 fn host_os_layout() -> (&'static str, &'static str) {
@@ -87,7 +84,9 @@ fn main() {
 fn release_artifact(target_dir: &Path, lib_name: &str, ext: &str) -> PathBuf {
     match ext {
         "dll" => target_dir.join("release").join(format!("{lib_name}.dll")),
-        "dylib" => target_dir.join("release").join(format!("lib{lib_name}.dylib")),
+        "dylib" => target_dir
+            .join("release")
+            .join(format!("lib{lib_name}.dylib")),
         "so" => target_dir.join("release").join(format!("lib{lib_name}.so")),
         _ => unreachable!(),
     }

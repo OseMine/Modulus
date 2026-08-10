@@ -64,13 +64,8 @@ pub mod exports {
     /// Resets a module.
     pub type ModulusModuleResetFn = unsafe extern "C" fn(*mut c_void);
     /// Processes one stereo frame: `in_l` and `in_r` point at single samples.
-    pub type ModulusModuleProcessFn = unsafe extern "C" fn(
-        *mut c_void,
-        *mut f32,
-        *mut f32,
-        *const f32,
-        f32,
-    );
+    pub type ModulusModuleProcessFn =
+        unsafe extern "C" fn(*mut c_void, *mut f32, *mut f32, *const f32, f32);
 }
 
 pub const SYMBOL_INFO: &[u8] = b"modulus_module_info\0";

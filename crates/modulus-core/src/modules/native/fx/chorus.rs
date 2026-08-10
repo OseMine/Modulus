@@ -14,12 +14,30 @@ pub const DELAY_MS: &str = "delay_ms";
 pub const WIDTH: &str = "width";
 
 const PARAMS: &[ModuleParamSpec] = &[
-    ModuleParamSpec { name: DRY_WET, default: 0.35 },
-    ModuleParamSpec { name: DEPTH, default: 0.5 },
-    ModuleParamSpec { name: RATE, default: 1.0 },
-    ModuleParamSpec { name: VOICES, default: 2.0 },
-    ModuleParamSpec { name: DELAY_MS, default: 10.0 },
-    ModuleParamSpec { name: WIDTH, default: 0.5 },
+    ModuleParamSpec {
+        name: DRY_WET,
+        default: 0.35,
+    },
+    ModuleParamSpec {
+        name: DEPTH,
+        default: 0.5,
+    },
+    ModuleParamSpec {
+        name: RATE,
+        default: 1.0,
+    },
+    ModuleParamSpec {
+        name: VOICES,
+        default: 2.0,
+    },
+    ModuleParamSpec {
+        name: DELAY_MS,
+        default: 10.0,
+    },
+    ModuleParamSpec {
+        name: WIDTH,
+        default: 0.5,
+    },
 ];
 
 pub struct ChorusModule {
@@ -112,6 +130,7 @@ impl AudioModule for ChorusModule {
 }
 
 pub fn register(registry: &mut ModuleRegistry) {
-    let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(ChorusModule::new("chorus".into())) });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(ChorusModule::new("chorus".into())) });
     registry.register("chorus", ModuleKind::Fx, builder);
 }

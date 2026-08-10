@@ -21,8 +21,8 @@ const DURATION_SECS: f32 = 2.0;
 fn main() {
     let patch_path = std::env::var("MODULUS_PATCH")
         .unwrap_or_else(|_| "scripts/lua/example_patch.lua".to_string());
-    let output_path = std::env::var("MODULUS_OUTPUT")
-        .unwrap_or_else(|_| "target/patch_output.wav".to_string());
+    let output_path =
+        std::env::var("MODULUS_OUTPUT").unwrap_or_else(|_| "target/patch_output.wav".to_string());
 
     let source = std::fs::read_to_string(&patch_path)
         .unwrap_or_else(|err| panic!("failed to read patch {patch_path}: {err}"));

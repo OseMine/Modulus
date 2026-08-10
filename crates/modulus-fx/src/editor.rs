@@ -69,26 +69,82 @@ pub fn create_editor(params: Arc<ModulusFxParams>) -> Option<Box<dyn Editor>> {
                     ui.spacing_mut().slider_width = 280.0;
 
                     section(ui, "Filter", |ui| {
-                        slider_row(ui, "Type", widgets::ParamSlider::for_param(&params.filt_type, setter));
-                        slider_row(ui, "Enabled", widgets::ParamSlider::for_param(&params.filt_enabled, setter));
-                        slider_row(ui, "Cutoff", widgets::ParamSlider::for_param(&params.filt_cutoff, setter));
-                        slider_row(ui, "Resonance", widgets::ParamSlider::for_param(&params.filt_resonance, setter));
-                        slider_row(ui, "Smoothing", widgets::ParamSlider::for_param(&params.filt_smoothing, setter));
+                        slider_row(
+                            ui,
+                            "Type",
+                            widgets::ParamSlider::for_param(&params.filt_type, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Enabled",
+                            widgets::ParamSlider::for_param(&params.filt_enabled, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Cutoff",
+                            widgets::ParamSlider::for_param(&params.filt_cutoff, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Resonance",
+                            widgets::ParamSlider::for_param(&params.filt_resonance, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Smoothing",
+                            widgets::ParamSlider::for_param(&params.filt_smoothing, setter),
+                        );
                     });
 
                     section(ui, "Chorus", |ui| {
-                        slider_row(ui, "Enabled", widgets::ParamSlider::for_param(&params.chorus_enabled, setter));
-                        slider_row(ui, "Dry/Wet", widgets::ParamSlider::for_param(&params.chorus_dry_wet, setter));
-                        slider_row(ui, "Depth", widgets::ParamSlider::for_param(&params.chorus_depth, setter));
-                        slider_row(ui, "Rate", widgets::ParamSlider::for_param(&params.chorus_rate, setter));
-                        slider_row(ui, "Voices", widgets::ParamSlider::for_param(&params.chorus_voices, setter));
-                        slider_row(ui, "Delay", widgets::ParamSlider::for_param(&params.chorus_delay, setter));
-                        slider_row(ui, "Width", widgets::ParamSlider::for_param(&params.chorus_width, setter));
+                        slider_row(
+                            ui,
+                            "Enabled",
+                            widgets::ParamSlider::for_param(&params.chorus_enabled, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Dry/Wet",
+                            widgets::ParamSlider::for_param(&params.chorus_dry_wet, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Depth",
+                            widgets::ParamSlider::for_param(&params.chorus_depth, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Rate",
+                            widgets::ParamSlider::for_param(&params.chorus_rate, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Voices",
+                            widgets::ParamSlider::for_param(&params.chorus_voices, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Delay",
+                            widgets::ParamSlider::for_param(&params.chorus_delay, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Width",
+                            widgets::ParamSlider::for_param(&params.chorus_width, setter),
+                        );
                     });
 
                     section(ui, "Gain", |ui| {
-                        slider_row(ui, "Gain In", widgets::ParamSlider::for_param(&params.gain_in, setter));
-                        slider_row(ui, "Gain Out", widgets::ParamSlider::for_param(&params.gain_out, setter));
+                        slider_row(
+                            ui,
+                            "Gain In",
+                            widgets::ParamSlider::for_param(&params.gain_in, setter),
+                        );
+                        slider_row(
+                            ui,
+                            "Gain Out",
+                            widgets::ParamSlider::for_param(&params.gain_out, setter),
+                        );
                     });
                 });
             });

@@ -15,6 +15,8 @@ pub mod modules;
 pub mod oscillator;
 pub mod rng;
 pub mod synth;
+#[cfg(feature = "setup")]
+pub mod synth_setup;
 pub mod voice;
 pub mod waveform;
 

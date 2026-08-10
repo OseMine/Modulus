@@ -8,9 +8,7 @@ pub struct FastRng {
 
 impl FastRng {
     pub fn new(seed: u32) -> Self {
-        Self {
-            state: seed.max(1),
-        }
+        Self { state: seed.max(1) }
     }
 
     pub fn next_u32(&mut self) -> u32 {

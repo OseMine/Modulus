@@ -69,6 +69,15 @@
 ## Phase 7: Documentation & Delivery — DONE
 - [x] `README.md` + `docs/{ARCHITECTURE,MIGRATION,PARAMETERS,BUILDING,MODULES,LUA}.md`
 
+## Phase 6c: Synth Setup Configs — DONE
+- [x] `SynthSetup` (feature `setup`): JSON configs defining synth topology/routing (`setups/`)
+- [x] `SynthGraph::process_frame` fixed routing: sources → bus → filter (+pregain) → amp env → modulator (to_amp/to_filter_octaves), `cv()`-driven cutoff/anp modulation
+- [x] Optional fixed `model` per slot; role defaults (`oscillator`/`filter`/`envelope`/`lfo`), category validated at build
+- [x] `AudioModule::cv()` default + `adsr`/`lfo` implementations
+- [x] `setups/default.json` + `setups/bridge_lead.json`; user setups dir (`%APPDATA%/Modulus/setups`)
+- [x] 13 tests (`tests/synth_setup.rs`) + `setup_player` example renders to WAV
+- [x] `docs/SETUPS.md` + README feature bullet
+
 ## Phase 8: GitOps — DONE
 - [x] `new` branch merged into `main` (Cargo.lock conflict resolved)
 - [x] `.github/actions/setup` (toolchain+rust-cache), `.github/actions/checks`, `.github/actions/bundle` composite actions

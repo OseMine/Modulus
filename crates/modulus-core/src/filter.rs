@@ -116,7 +116,8 @@ impl VariableFilter {
         filter
     }
 
-    pub fn set_type(&mut self, filter_type: FilterType) {        self.filter_type = filter_type;
+    pub fn set_type(&mut self, filter_type: FilterType) {
+        self.filter_type = filter_type;
     }
 
     pub fn set_smoothing(&mut self, coeff: f32) {

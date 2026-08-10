@@ -19,7 +19,9 @@ pub struct ModuleRegistry {
 impl ModuleRegistry {
     /// An empty registry.
     pub fn empty() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     /// Register a new module builder under `name`.

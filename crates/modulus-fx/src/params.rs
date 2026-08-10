@@ -122,15 +122,14 @@ impl Default for ModulusFxParams {
             )
             .with_smoother(SmoothingStyle::Linear(50.0))
             .with_unit(" Hz"),
-            chorus_voices: IntParam::new(
-                "Chorus Voices",
-                2,
-                IntRange::Linear { min: 0, max: 5 },
-            ),
+            chorus_voices: IntParam::new("Chorus Voices", 2, IntRange::Linear { min: 0, max: 5 }),
             chorus_delay: FloatParam::new(
                 "Chorus Delay",
                 10.0,
-                FloatRange::Linear { min: 0.0, max: 50.0 },
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 50.0,
+                },
             )
             .with_unit(" ms"),
             chorus_width: FloatParam::new(

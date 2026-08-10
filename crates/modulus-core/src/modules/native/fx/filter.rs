@@ -12,10 +12,22 @@ pub const RESONANCE: &str = "resonance";
 pub const SMOOTHING: &str = "smoothing_ms";
 
 const PARAMS: &[ModuleParamSpec] = &[
-    ModuleParamSpec { name: TYPE, default: 0.0 },
-    ModuleParamSpec { name: CUTOFF, default: 1000.0 },
-    ModuleParamSpec { name: RESONANCE, default: 0.3 },
-    ModuleParamSpec { name: SMOOTHING, default: 0.0 },
+    ModuleParamSpec {
+        name: TYPE,
+        default: 0.0,
+    },
+    ModuleParamSpec {
+        name: CUTOFF,
+        default: 1000.0,
+    },
+    ModuleParamSpec {
+        name: RESONANCE,
+        default: 0.3,
+    },
+    ModuleParamSpec {
+        name: SMOOTHING,
+        default: 0.0,
+    },
 ];
 
 pub struct FilterModule {
@@ -107,6 +119,7 @@ impl AudioModule for FilterModule {
 }
 
 pub fn register(registry: &mut ModuleRegistry) {
-    let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(FilterModule::new("filter".into())) });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(FilterModule::new("filter".into())) });
     registry.register("filter", ModuleKind::Fx, builder);
 }

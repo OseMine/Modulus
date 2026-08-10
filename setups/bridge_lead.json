@@ -1,0 +1,38 @@
+{
+  "name": "Bridge Lead",
+  "soundgens": [
+    {
+      "model": "am_bridge",
+      "params": {
+        "carrier_waveform": 4,
+        "carrier_level": 0.6,
+        "carrier_pitch": 0,
+        "modulator_waveform": 1,
+        "modulator_level": 0.4,
+        "modulator_pitch": 12,
+        "mode": 1,
+        "am_depth": 0.6
+      }
+    },
+    { "params": { "waveform": 0, "level": 0.3, "pitch_semitones": 7 } }
+  ],
+  "mixer": { "output_level": 0.9 },
+  "filter": {
+    "model": "filter",
+    "params": { "filter_type": 1, "cutoff": 4500, "resonance": 0.35 },
+    "pregain_db": -3.0
+  },
+  "amp_envelope": {
+    "params": { "attack": 0.005, "decay": 0.15, "sustain": 0.55, "release": 0.25 }
+  },
+  "filter_envelope": {
+    "params": { "attack": 0.01, "decay": 0.35, "sustain": 0.3, "release": 0.3 },
+    "contour_octaves": 2.5
+  },
+  "modulator": {
+    "model": "lfo",
+    "params": { "waveform": 4, "rate_hz": 2.0, "depth": 0.8 },
+    "to_amp": 0.1,
+    "to_filter_octaves": 1.5
+  }
+}

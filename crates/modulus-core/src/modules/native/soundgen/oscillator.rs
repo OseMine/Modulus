@@ -123,8 +123,10 @@ impl AudioModule for OscillatorModule {
 }
 
 pub fn register(registry: &mut ModuleRegistry) {
-    let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(OscillatorModule::new("osc".into())) });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(OscillatorModule::new("osc".into())) });
     registry.register("oscillator", ModuleKind::SoundGen, builder);
-    let builder = Arc::new(|| -> Box<dyn AudioModule> { Box::new(OscillatorModule::new("osc2".into())) });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(OscillatorModule::new("osc2".into())) });
     registry.register("oscillator2", ModuleKind::SoundGen, builder);
 }

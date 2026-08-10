@@ -35,11 +35,7 @@ pub fn build_patch(registry: &ModuleRegistry, source: &str) -> Result<ModuleGrap
 
     let patch = match value {
         mlua::Value::Table(table) => table,
-        _ => {
-            return Err(ModuleError::Lua(
-                "patch must return a table".to_string(),
-            ))
-        }
+        _ => return Err(ModuleError::Lua("patch must return a table".to_string())),
     };
 
     let modules_value = patch

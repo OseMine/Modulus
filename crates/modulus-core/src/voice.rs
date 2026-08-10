@@ -147,8 +147,7 @@ impl Voice {
         let amp_env = self.amp_env.process();
         let filt_env = self.filt_env.process();
 
-        let cutoff = (params.filter_cutoff
-            * 2.0_f32.powf(params.filter_env_amount * filt_env))
+        let cutoff = (params.filter_cutoff * 2.0_f32.powf(params.filter_env_amount * filt_env))
             .clamp(FILTER_MIN_CUTOFF, FILTER_MAX_CUTOFF);
         self.filter.set_type(params.filter_type);
         self.filter.set_smoothing(0.0);

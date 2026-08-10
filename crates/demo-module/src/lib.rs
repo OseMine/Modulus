@@ -149,8 +149,7 @@ pub unsafe extern "C" fn modulus_module_process(
 impl DemoOsc {
     fn update_phase_increment(&mut self, sample_rate: f32, frequency: f32) {
         let semitones = 2.0_f32.powf(self.pitch_semitones / 12.0);
-        self.phase_increment =
-            std::f32::consts::TAU * frequency * semitones / sample_rate.max(1.0);
+        self.phase_increment = std::f32::consts::TAU * frequency * semitones / sample_rate.max(1.0);
     }
 
     fn sample(&mut self) -> f32 {

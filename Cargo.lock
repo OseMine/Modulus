@@ -729,6 +729,8 @@ version = "0.1.0"
 dependencies = [
  "libloading",
  "mlua",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

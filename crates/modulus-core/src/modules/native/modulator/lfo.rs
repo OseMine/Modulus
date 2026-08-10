@@ -16,9 +16,18 @@ pub const RATE_HZ: &str = "rate_hz";
 pub const DEPTH: &str = "depth";
 
 const PARAMS: &[ModuleParamSpec] = &[
-    ModuleParamSpec { name: WAVEFORM, default: 0.0 },
-    ModuleParamSpec { name: RATE_HZ, default: 1.0 },
-    ModuleParamSpec { name: DEPTH, default: 0.5 },
+    ModuleParamSpec {
+        name: WAVEFORM,
+        default: 0.0,
+    },
+    ModuleParamSpec {
+        name: RATE_HZ,
+        default: 1.0,
+    },
+    ModuleParamSpec {
+        name: DEPTH,
+        default: 0.5,
+    },
 ];
 
 pub struct LfoModule {
@@ -27,6 +36,7 @@ pub struct LfoModule {
     waveform: Waveform,
     rate_hz: f32,
     depth: f32,
+    last_gain: f32,
 }
 
 impl LfoModule {
@@ -39,6 +49,7 @@ impl LfoModule {
             waveform: Waveform::Sine,
             rate_hz: 1.0,
             depth: 0.5,
+            last_gain: 1.0,
         }
     }
 }
@@ -96,8 +107,13 @@ impl AudioModule for LfoModule {
         let bipolar = self.osc.generate();
         let unipolar = ((bipolar + 1.0) * 0.5).clamp(0.0, 1.0);
         let gain = 1.0 - self.depth + self.depth * unipolar;
+        self.last_gain = gain;
         frame[0] *= gain;
         frame[1] *= gain;
+    }
+
+    fn cv(&self) -> f32 {
+        self.last_gain
     }
 }
 

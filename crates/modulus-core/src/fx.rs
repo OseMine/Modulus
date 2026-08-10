@@ -136,8 +136,7 @@ impl Chorus {
                 let fraction = delay - delay_floor;
                 let index = (*write + size - delay_floor as usize) & mask;
                 let next_index = (index + 1) & mask;
-                let delayed =
-                    buffer[index] * (1.0 - fraction) + buffer[next_index] * fraction;
+                let delayed = buffer[index] * (1.0 - fraction) + buffer[next_index] * fraction;
                 wet += delayed;
             }
             wet *= wet_gain;
@@ -205,7 +204,8 @@ impl FxEngine {
         if params.filter_enabled {
             self.filter.set_type(params.filter_type);
             self.filter.set_smoothing(params.filter_smoothing_coeff);
-            self.filter.set_params(params.filter_cutoff, params.filter_resonance);
+            self.filter
+                .set_params(params.filter_cutoff, params.filter_resonance);
             for sample in frame.iter_mut() {
                 *sample = self.filter.process(*sample, sample_rate);
             }

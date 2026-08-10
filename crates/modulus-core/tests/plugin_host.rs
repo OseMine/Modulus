@@ -26,8 +26,8 @@ fn loads_and_runs_demo_module() {
     };
 
     // SAFETY: demo-module implements the ABI correctly by construction.
-    let mut module = unsafe { DynamicModule::open(Path::new(&path)) }
-        .expect("demo module should load");
+    let mut module =
+        unsafe { DynamicModule::open(Path::new(&path)) }.expect("demo module should load");
 
     assert_eq!(module.kind(), ModuleKind::SoundGen);
     assert_eq!(module.name(), "demo");

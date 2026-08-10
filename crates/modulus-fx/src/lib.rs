@@ -26,7 +26,7 @@ impl Default for ModulusFx {
 
 impl Plugin for ModulusFx {
     const NAME: &'static str = "Modulus FX";
-    const VENDOR: &'static str = "The Muzikar";
+    const VENDOR: &'static str = "OskarFX";
     const URL: &'static str = "";
     const EMAIL: &'static str = "";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");

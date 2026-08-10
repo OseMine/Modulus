@@ -23,14 +23,38 @@ pub const MODE: &str = "mode";
 pub const AM_DEPTH: &str = "am_depth";
 
 const PARAMS: &[ModuleParamSpec] = &[
-    ModuleParamSpec { name: CARRIER_WAVEFORM, default: 0.0 },
-    ModuleParamSpec { name: CARRIER_LEVEL, default: 0.7 },
-    ModuleParamSpec { name: CARRIER_PITCH, default: 0.0 },
-    ModuleParamSpec { name: MODULATOR_WAVEFORM, default: 1.0 },
-    ModuleParamSpec { name: MODULATOR_LEVEL, default: 0.5 },
-    ModuleParamSpec { name: MODULATOR_PITCH, default: 0.0 },
-    ModuleParamSpec { name: MODE, default: 1.0 },
-    ModuleParamSpec { name: AM_DEPTH, default: 0.5 },
+    ModuleParamSpec {
+        name: CARRIER_WAVEFORM,
+        default: 0.0,
+    },
+    ModuleParamSpec {
+        name: CARRIER_LEVEL,
+        default: 0.7,
+    },
+    ModuleParamSpec {
+        name: CARRIER_PITCH,
+        default: 0.0,
+    },
+    ModuleParamSpec {
+        name: MODULATOR_WAVEFORM,
+        default: 1.0,
+    },
+    ModuleParamSpec {
+        name: MODULATOR_LEVEL,
+        default: 0.5,
+    },
+    ModuleParamSpec {
+        name: MODULATOR_PITCH,
+        default: 0.0,
+    },
+    ModuleParamSpec {
+        name: MODE,
+        default: 1.0,
+    },
+    ModuleParamSpec {
+        name: AM_DEPTH,
+        default: 0.5,
+    },
 ];
 
 /// `mode`: `0` = Mix (both oscillators summed), `1` = AM (carrier modulated
@@ -84,7 +108,8 @@ impl AmBridgeModule {
     }
 
     fn tune(&mut self, base_frequency: f32) {
-        self.carrier.set_frequency(base_frequency * semitone_mult(self.carrier_pitch));
+        self.carrier
+            .set_frequency(base_frequency * semitone_mult(self.carrier_pitch));
         self.modulator
             .set_frequency(base_frequency * semitone_mult(self.modulator_pitch));
     }
@@ -129,7 +154,9 @@ impl AudioModule for AmBridgeModule {
 
     fn set_param(&mut self, name: &str, value: f32) -> bool {
         match name {
-            CARRIER_WAVEFORM => self.carrier_waveform = Waveform::from_index(value.clamp(0.0, 7.0) as usize),
+            CARRIER_WAVEFORM => {
+                self.carrier_waveform = Waveform::from_index(value.clamp(0.0, 7.0) as usize)
+            }
             CARRIER_LEVEL => self.carrier_level = value.clamp(0.0, 1.0),
             CARRIER_PITCH => self.carrier_pitch = value,
             MODULATOR_WAVEFORM => {
@@ -152,7 +179,11 @@ impl AudioModule for AmBridgeModule {
             MODULATOR_WAVEFORM => Some(self.modulator_waveform as u8 as f32),
             MODULATOR_LEVEL => Some(self.modulator_level),
             MODULATOR_PITCH => Some(self.modulator_pitch),
-            MODE => Some(if self.mode == BridgeMode::Am { 1.0 } else { 0.0 }),
+            MODE => Some(if self.mode == BridgeMode::Am {
+                1.0
+            } else {
+                0.0
+            }),
             AM_DEPTH => Some(self.am_depth),
             _ => None,
         }
@@ -170,9 +201,7 @@ impl AudioModule for AmBridgeModule {
         let modulator = self.modulator.generate();
         let sample = match self.mode {
             BridgeMode::Mix => carrier * self.carrier_level + modulator * self.modulator_level,
-            BridgeMode::Am => {
-                carrier * (1.0 + modulator * self.am_depth) * self.carrier_level
-            }
+            BridgeMode::Am => carrier * (1.0 + modulator * self.am_depth) * self.carrier_level,
         };
         frame[0] = sample;
         frame[1] = sample;
@@ -184,8 +213,7 @@ fn semitone_mult(semitones: f32) -> f32 {
 }
 
 pub fn register(registry: &mut ModuleRegistry) {
-    let builder = Arc::new(|| -> Box<dyn AudioModule> {
-        Box::new(AmBridgeModule::new("bridge".into()))
-    });
+    let builder =
+        Arc::new(|| -> Box<dyn AudioModule> { Box::new(AmBridgeModule::new("bridge".into())) });
     registry.register("am_bridge", ModuleKind::SoundGen, builder);
 }

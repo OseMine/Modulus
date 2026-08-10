@@ -44,7 +44,8 @@ impl SynthEngine {
         let mut frame = [mono, mono];
 
         if fx_params.chorus_enabled {
-            self.chorus.process(&mut frame, &fx_params.chorus, sample_rate);
+            self.chorus
+                .process(&mut frame, &fx_params.chorus, sample_rate);
         }
 
         apply_gain_db(&mut frame, fx_params.gain_db);

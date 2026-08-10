@@ -209,7 +209,10 @@ impl Default for ModulusParams {
             fx_chorus_delay: FloatParam::new(
                 "Chorus Delay",
                 10.0,
-                FloatRange::Linear { min: 0.0, max: 50.0 },
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 50.0,
+                },
             )
             .with_unit(" ms"),
             fx_chorus_width: level_param("Chorus Width", 0.5),
@@ -248,12 +251,8 @@ fn cutoff_param(name: &'static str, default: f32) -> FloatParam {
 }
 
 fn level_param(name: &'static str, default: f32) -> FloatParam {
-    FloatParam::new(
-        name,
-        default,
-        FloatRange::Linear { min: 0.0, max: 1.0 },
-    )
-    .with_smoother(SmoothingStyle::Linear(50.0))
+    FloatParam::new(name, default, FloatRange::Linear { min: 0.0, max: 1.0 })
+        .with_smoother(SmoothingStyle::Linear(50.0))
 }
 
 fn time_param(name: &'static str, default: f32) -> FloatParam {
