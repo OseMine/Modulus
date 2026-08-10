@@ -67,6 +67,9 @@
 - [ ] Write `editor.rs` for Modulus FX: header, sections (Filter, Chorus, Gain In/Out), `ParamSlider::for_param` rows
 - [ ] Wire `fn editor(...)` into both `Plugin` impls via `create_egui_editor(...)`
 - [ ] Rebuild (`cargo build --release`), clippy, and re-bundle with xtask to verify
+- [ ] As easy as in workspace/variable-* to add new modules, etc
+- [ ] lua engine to build own modules (synth engines, filters, envelopes, fx, etc)
+- [ ] plugin engine to build modules like in lua, but more in depth (languages like rust or py can be compiled)
 
 ## Open Questions / Notes
 - Original `Am-Synth` filter banks (carrier/modulator/global) were never wired into its audio path; consolidated as a single per-voice filter in Modulus
