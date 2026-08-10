@@ -1,0 +1,16 @@
+name: Run rust lints
+description: >-
+  Fast formatting and clippy feedback without the full build/test/bundle
+  suite. Shared by the Lint workflow; build.yml runs the same checks via
+  ./.github/actions/checks.
+
+runs:
+  using: composite
+  steps:
+    - name: Check formatting
+      shell: bash
+      run: cargo fmt --all --check
+
+    - name: Run clippy with warnings as errors
+      shell: bash
+      run: cargo clippy --workspace --all-targets -- -D warnings
