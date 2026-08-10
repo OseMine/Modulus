@@ -12,6 +12,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Install Linux GUI dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: >
+        sudo apt-get update &&
+        sudo apt-get install -y
+        libgl1-mesa-dev libglu1-mesa-dev libegl1-mesa-dev
+        libxcb1-dev libxcb-render0-dev libxcb-shape0-dev
+        libxcb-xfixes0-dev libxkbcommon-dev libwayland-dev
+
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@1.97
       with:
