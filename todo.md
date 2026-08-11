@@ -1,95 +1,54 @@
-# Modulus Consolidation — Task List
+# Modulus — Task List
 
-## Phase 1: Reconnaissance & Cloning — DONE
-- [x] Clone `variable-synth`, `Am-Synth`, `variable-filter`, `variable-effects` into `workspace/`
-- [x] Analyze Cargo.toml, module layout, DSP structs, params, GUI integrations
-- [x] Note: all 4 repos pin the same nih-plug git rev (`dfafe90349aa3d8e40922ec031b6d673803d6432`)
+## 2026-08-11 — Code-Review Bridge Engines (reports/review-2026-08-11.md)
 
-## Phase 2: Workspace Architecture — DONE
-- [x] Root workspace `Cargo.toml` with `crates/` layout
-- [x] `modulus-core` shared DSP library (no nih_plug dependency)
-- [x] `modulus-synth` plugin crate (Modulus)
-- [x] `modulus-fx` plugin crate (Modulus FX)
-- [x] `xtask` bundling helper (cross-platform host layouts)
-- [x] Vendored `anymap` patch (upstream beta.2 broken with rustc 1.97, E0804)
+Neue Befunde aus dem automatiserten Review (Fokus: Bridge Engines /
+`am_bridge`/`fm_bridge`/`bridge_lead.json` + Modul-/Setup-Engine). Details
+inkl. Verifikation im Review. Abgehakte Todos aus älteren Phasen sind in
+`archived-todo.md`.
 
-## Phase 3: Code Extraction & Refactoring — DONE
-### 3a Oscillators (variable-synth + Am-Synth) — DONE
-- [x] `Waveform` enum with all 8 waveform generators
-- [x] `Oscillator` phase-accumulator (unified sine osc + phase loop)
-- [x] `FastRng` xorshift32 replacing RT-unsafe `rand::thread_rng()`
-- [x] `Voice` / `VoicePool` (8-voice, round-robin stealing, AM bridge)
+### Bugs (Modul-/Setup-Pfad)
+- [ ] B1: `filter`-Modul ignoriert `filter_type` — `VariableFilter::set_type()`
+      wird nie aufgerufen (crates/modulus-core/src/modules/native/fx/filter.rs,
+      `set_param`/`process`). Alle Setups (bridge_lead, juno_106, dx7) rendern
+      als Moog statt Roland (filter_type 1). Verifiziert: type 0–3 bitident.
+- [ ] B2: `analog_saw` überschreitet ±1 (Range [−3.0, 1.0], Mean −0.84) —
+      `shaped * 2.0 - 1.0` (crates/modulus-core/src/waveform.rs:89).
+- [ ] B3: `pregain_db` wirkt als zweiter Master-Level statt als Filter-Drive —
+      wird in `SynthGraph::process_frame` erst nach Filter+Env multipliziert
+      (crates/modulus-core/src/synth_setup.rs:523–525), widerspricht
+      docs/SETUPS.md.
+- [ ] B4: Release-Tail beim Setup-/Modul-Pfad praktisch unhörbar — Sources
+      (oscillator/am_bridge/fm_bridge) gaten bei `note_off` sofort auf 0;
+      Envelope-Release hat nichts zu formen (modules/native/soundgen/*,
+      synth_setup.rs:477). Verifiziert: nach note_off nur ~15 nonzero Samples.
 
-### 3b Filter (variable-filter) — DONE
-- [x] `VariableFilter` with 4 models (Moog, Roland, LE13700, ARP 4075), zero-alloc
-- [x] `OnePoleSmoother` replacing `static mut` globals
-- [x] Ladder filters unified into one implementation with per-model scale factor
+### Fehlende Features
+- [ ] B5: Velocity wird in der Modul-/Setup-Engine ignoriert (alle
+      `AudioModule::note_on` verwerfen velocity; synth_setup.rs:467). Verifiziert:
+      velocity 0.1 und 1.0 identischer Peak. Plugin-Voice-Pfad (voice.rs:157)
+      korrekt.
 
-### 3c Effects (variable-effects) — DONE
-- [x] `Chorus` (real modulated delay line, stereo width)
-- [x] `Gain` (dB), `FxEngine` serial rack
-- [x] Removed `Vec` allocation + `Box<dyn Effect>` from process path
+### Verbesserungsvorschläge
+- [ ] B6: `FilterType::Le13700` ist bitidentisch zu `Roland` (beide scale 1.0,
+      crates/modulus-core/src/filter.rs:153–154) — differenzieren oder entfernen.
+- [ ] B7: `oscillator`-Modul clammt `level`/`pitch_semitones` nicht
+      (modules/native/soundgen/oscillator.rs:97–98) — Pegel-Konvention.
+- [ ] B8: LFO→Filter-Modulation nur abwärts möglich (mod_cv ∈ [1−depth,1];
+      SETUPS.md „around the base" irreführend) —
+      crates/modulus-core/src/modules/native/modulator/lfo.rs:115–117.
+- [ ] B9: `ModuleEvents.note_on`/`note_off` tote Objekte — nirgends konsumiert
+      (crates/modulus-core/src/modules/mod.rs:71–81).
 
-### 3d Params — DONE
-- [x] Flat prefixed IDs (`osc1_`, `osc2_`, `filt_`, `env_`, `fenv_`, `fx_`, `global_`)
-- [x] `modulus-synth`: 29 params; `modulus-fx`: 14 params (+ editor state)
+### Tracking offene GitHub-Issues
+- [ ] Issue #4 „Todo.md — Implement the Test of todo.md's changes and check
+      them off in there" (2026-08-05) — Abhaken wird in dieser Runde
+      durchgeführt; Issue nach Abschluss schließen.
 
-## Phase 4: Build & Bundling — DONE (DAW check deferred)
-- [x] Release build passes for both plugins (rustc 1.97.1)
-- [x] `cargo clippy --workspace --all-targets -- -D warnings` clean
-- [x] `cargo run -p xtask --release bundle` produces VST3 + CLAP bundles
-- [x] `scripts/build.ps1` / `scripts/build.sh` run the full gate (fmt, clippy, tests, bundle)
+### Repository-Aufräumen
+- [ ] Branch `origin/new` löschen (restloses Duplikat; PR #5 CLOSED ohne Merge,
+      74 Dateien / −6034 Zeilen Differenz zu main, Inhalt via e46ed85 in main).
+      Nicht gelöscht, da kein Push in dieser Runde erlaubt.
+
+## Offen (verbleibend)
 - [ ] Runtime host verification in a DAW — deferred: no DAW on this machine (covered nightly by `--test` plugin_host)
-
-## Phase 5: GUI Editors — DONE
-- [x] `nih_plug_egui` at pinned rev in workspace deps; `editor_state: Arc<EguiState>` (`#[persist]`) on both param sets
-- [x] `crates/modulus-synth/src/editor.rs`: header, collapsible sections (Oscillators, Filter, Amp Env, Filter Env, Chorus, Output), live voice-count meter
-- [x] `crates/modulus-fx/src/editor.rs`: header, sections (Filter, Chorus, Gain In/Out)
-- [x] `ParamSlider::for_param` rows, dark visuals, `create_egui_editor` wired into both `Plugin::editor()`
-
-## Phase 6: Module Engine — DONE
-- [x] Core engine: `AudioModule` trait + `ModuleGraph`, registry, native modules (3 osc types, filter, envelope, chorus, gain)
-- [x] Lua engine: `mlua 0.12` (lua54) patch compiler loading scripts at patch time (zero-alloc in `process()`)
-- [x] Plugin engine: stable C-ABI (`abi.rs`, magic `0x4D4F_4455`, API v1) + `DynamicModule` host via `libloading`
-- [x] `demo-module` reference compiled module (cdylib, no-unwind, `catch_unwind` + panic flag)
-- [x] Tests: 5 Lua + 1 plugin-host (live DLL load), all passing; `patch_player` example render verified
-- [x] `docs/MODULES.md` + `docs/LUA.md` explain how to add modules / write Lua patches
-
-## Phase 6b: Module Categories + Am-Synth Bridge — DONE
-- [x] `ModuleKind` split into categories: `SoundGen`, `Envelope`, `Modulator`, `Fx` (+ `is_source`, `label`)
-- [x] `native/` folder mirrors categories: `soundgen/`, `envelope/`, `modulator/`, `fx/`
-- [x] `registry.names_by_kind()` to enumerate a category (GUI palettes, docs)
-- [x] `am_bridge` sound generator added: `Am-Synth` carrier/modulator bridge with `Mix`/`AM` modes + `am_depth` (reuses the voice `Osc2Mode` architecture)
-- [x] `lfo` modulator added (free-running, depth 0..1, tremolo-ready)
-- [x] ABI kind constants renumbered to match (`SOUNDGEN=0`, `ENVELOPE=1`, `MODULATOR=2`, `FX=3`); host + demo-module + tests updated
-- [x] New tests: 9 category/bridge/LFO + 1 Lua bridge patch (16 total, all passing)
-- [x] `example_patch.lua` now showcases am_bridge + lfo; render peak 0.206, non-silent
-- [x] Docs updated (MODULES.md table + categories, LUA.md semantics, ARCHITECTURE.md)
-
-## Phase 7: Documentation & Delivery — DONE
-- [x] `README.md` + `docs/{ARCHITECTURE,MIGRATION,PARAMETERS,BUILDING,MODULES,LUA}.md`
-
-## Phase 6c: Synth Setup Configs — DONE
-- [x] `SynthSetup` (feature `setup`): JSON configs defining synth topology/routing (`setups/`)
-- [x] `SynthGraph::process_frame` fixed routing: sources → bus → filter (+pregain) → amp env → modulator (to_amp/to_filter_octaves), `cv()`-driven cutoff/anp modulation
-- [x] Optional fixed `model` per slot; role defaults (`oscillator`/`filter`/`envelope`/`lfo`), category validated at build
-- [x] `AudioModule::cv()` default + `adsr`/`lfo` implementations
-- [x] `setups/default.json` + `setups/bridge_lead.json`; user setups dir (`%APPDATA%/Modulus/setups`)
-- [x] 13 tests (`tests/synth_setup.rs`) + `setup_player` example renders to WAV
-- [x] `docs/SETUPS.md` + README feature bullet
-
-## Phase 8: GitOps — DONE
-- [x] `new` branch merged into `main` (Cargo.lock conflict resolved)
-- [x] `.github/actions/setup` (toolchain+rust-cache), `.github/actions/checks`, `.github/actions/bundle` composite actions
-- [x] `build.yml`: 3-OS matrix running fmt/clippy/tests/bundle via the actions
-- [x] `release.yml`: tag-triggered, bundles + GitHub Release with OpenCode-generated notes
-- [x] `opencode.yml`: hardened (concurrency, write-permission check, timeout, bot guard) + `rust-check` job
-- [x] All changes committed + pushed to `origin/main`
-
-## Open Questions / Notes
-- `Am-Synth` filter banks were never wired into its audio path; consolidated as single per-voice filter
-- `variable-effects` chorus placeholder replaced with a real multi-tap modulated delay-line chorus
-- `Am-Synth` MIDI now processed sample-accurate
-- `velocity` already normalized `f32` at this nih-plug rev
-- `editor_state.is_open()` skips expensive GUI-only work while window is closed
-- Windows `linker_messages` warning during release bundle is benign MSVC export-lib noise
