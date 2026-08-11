@@ -46,7 +46,7 @@ jobs:
           model: opencode/deepseek-v4-flash-free
           agent: reviewer
           use_github_token: true
-prompt: |
+          prompt: |
             Automatisiertes Code-Review des Modulus-Projekts (Rust-Workspace:
             Synthesizer-/FX-Plugins, nih-plug + egui, Modul-Engine).
             Fokusbereich: ${{ github.event.inputs.focus || 'das gesamte Projekt' }}
