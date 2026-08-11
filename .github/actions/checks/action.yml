@@ -11,6 +11,13 @@ runs:
       shell: bash
       run: cargo fmt --all --check
 
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-xcb-dev libx11-dev libxcb1-dev
+
     - name: Run clippy with warnings as errors
       shell: bash
       run: cargo clippy --workspace --all-targets -- -D warnings
