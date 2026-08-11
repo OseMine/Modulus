@@ -16,8 +16,6 @@ return {
 
 fn events() -> ModuleEvents {
     ModuleEvents {
-        note_on: None,
-        note_off: None,
         time_secs: 0.0,
         tuning_hz: 440.0,
     }

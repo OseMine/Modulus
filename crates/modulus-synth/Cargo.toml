@@ -13,3 +13,4 @@ crate-type = ["cdylib"]
 nih_plug = { workspace = true }
 nih_plug_egui = { workspace = true }
 modulus-core = { workspace = true }
+modulus-ui = { path = "../modulus-ui" }

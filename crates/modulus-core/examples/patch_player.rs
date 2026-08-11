@@ -37,8 +37,6 @@ fn main() {
     let mut frame = [0.0_f32; 2];
     let mut peak = 0.0_f32;
     let mut events = ModuleEvents {
-        note_on: None,
-        note_off: None,
         time_secs: 0.0,
         tuning_hz: 440.0,
     };

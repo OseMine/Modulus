@@ -39,6 +39,8 @@ pub struct EnvelopeModule {
     release: f32,
     sample_rate: f32,
     last_amp: f32,
+    last_cv: f32,
+    velocity: f32,
 }
 
 impl EnvelopeModule {
@@ -52,6 +54,8 @@ impl EnvelopeModule {
             release: 0.1,
             sample_rate: 44_100.0,
             last_amp: 0.0,
+            last_cv: 0.0,
+            velocity: 1.0,
         }
     }
 
@@ -83,10 +87,12 @@ impl AudioModule for EnvelopeModule {
     fn reset(&mut self) {
         self.env = Adsr::new(self.sample_rate);
         self.update_env();
+        self.velocity = 1.0;
     }
 
-    fn note_on(&mut self, _note: u8, _velocity: f32, _tuning_hz: f32) {
+    fn note_on(&mut self, _note: u8, velocity: f32, _tuning_hz: f32) {
         self.env.trigger();
+        self.velocity = velocity.clamp(0.0, 1.0);
     }
 
     fn note_off(&mut self, _note: u8) {
@@ -119,14 +125,18 @@ impl AudioModule for EnvelopeModule {
     }
 
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, _sample_rate: f32) {
-        let amp = self.env.process();
+        let env = self.env.process();
+        self.last_cv = env;
+        // Velocity scales the amplitude (mirrors the per-voice synth path);
+        // the CV value exposed to modulation stays velocity-independent.
+        let amp = env * self.velocity;
         self.last_amp = amp;
         frame[0] *= amp;
         frame[1] *= amp;
     }
 
     fn cv(&self) -> f32 {
-        self.last_amp
+        self.last_cv
     }
 }
 

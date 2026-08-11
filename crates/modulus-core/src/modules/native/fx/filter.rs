@@ -26,7 +26,7 @@ const PARAMS: &[ModuleParamSpec] = &[
     },
     ModuleParamSpec {
         name: SMOOTHING,
-        default: 0.0,
+        default: 15.0,
     },
 ];
 
@@ -48,14 +48,16 @@ impl FilterModule {
             filter_type: FilterType::Moog,
             cutoff: 1000.0,
             resonance: 0.3,
-            smoothing_ms: 0.0,
+            smoothing_ms: 15.0,
             sample_rate: 44_100.0,
         }
     }
 
     fn update_smoothing(&mut self) {
+        // One-pole time constant: coeff = exp(-1 / (tau * sr)); the
+        // label "ms" matches the actual tau directly (no 2*pi factor).
         let coeff = if self.smoothing_ms > 0.0 {
-            (-std::f32::consts::TAU * (1.0 / (self.smoothing_ms * 0.001 * self.sample_rate))).exp()
+            (-1.0 / (self.smoothing_ms * 0.001 * self.sample_rate)).exp()
         } else {
             0.0
         };
@@ -112,6 +114,9 @@ impl AudioModule for FilterModule {
     }
 
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, sample_rate: f32) {
+        // The type set via `set_param` is stored separately; make sure the
+        // engine actually uses it (previously all setups rendered as Moog).
+        self.filter.set_type(self.filter_type);
         self.filter.set_params(self.cutoff, self.resonance);
         frame[0] = self.filter.process(frame[0], sample_rate);
         frame[1] = self.filter.process(frame[1], sample_rate);

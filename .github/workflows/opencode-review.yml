@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: "0 6 * * 1" # Montag 06:00 UTC
 
+# Guard gegen parallele Läufe (Review-PRs kollidierten auf todo.md/reports).
+concurrency:
+  group: opencode-review
+  cancel-in-progress: true
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -19,7 +24,7 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: true
@@ -41,18 +46,20 @@ jobs:
           model: opencode/deepseek-v4-flash-free
           agent: reviewer
           use_github_token: true
-          prompt: |
-            Automatisiertes Code-Review des Koalitions-O-Mat.
+prompt: |
+            Automatisiertes Code-Review des Modulus-Projekts (Rust-Workspace:
+            Synthesizer-/FX-Plugins, nih-plug + egui, Modul-Engine).
             Fokusbereich: ${{ github.event.inputs.focus || 'das gesamte Projekt' }}
 
             Gehe vor wie im Reviewer-Agent beschrieben:
-            1. Lies README.md, config.json, script.js, index.html, styles.css,
-               einfache-sprache.json, elections.json und alles unter elections/ sowie die
-               bestehende todo.md.
-            2. Finde Bugs, fehlende Features und Verbesserungsvorschläge für die
-               Algorithmen (Übereinstimmungsrechnung, Koalitionsberechnung,
-               Themenzuordnung, Sitzverteilung). Verifiziere Verdachtsfälle, indem du
-               Funktionen mit den echten Datendateien ausführst.
+            1. Lies README.md, docs/*.md (ARCHITECTURE, PARAMETERS, MODULES,
+               SETUPS), Cargo.toml, den Code unter crates/ (modulus-core,
+               modulus-synth, modulus-fx, demo-module), die Workflows/Actions
+               unter .github/ sowie die bestehende todo.md.
+            2. Finde Bugs, fehlende Features und Verbesserungsvorschläge für
+               die DSP-Funktionen (Filter, Oszillatoren, Chorus, Envelope),
+               die Modul-/Setup-Engine und die CI. Verifiziere Verdachtsfälle,
+               indem du Tests/Harnesses oder Probe-Setups ausführst.
             3. Lege reports/review-YYYY-MM-DD.md SOFRÜH WIE MÖGLICH an und fülle
                es während des Reviews schrittweise (Ordner bei Bedarf anlegen).
                Schreibe das Review nicht erst ganz am Ende.
@@ -60,8 +67,8 @@ jobs:
                bestehende Einträge unangetastet lassen.
             ZUSÄTZLICHE NICHT IM REVIEWER Agent ENTHALTENE AUFGABEN:
             5. Prüfe welche Punkte aus todo.md erledigt wurden und markiere sie als erledigt (z. B. „[x]“), bzw prüfe ob sie korrekt mit [x] markiert wurden und verschiebe danach alle abgehakten todos nach archived-todo.md.
-            6. räume das repository auf ubd lösche/reviewe und merge pull requests und issues. füge offene issues zu den todos hinzu und schließe erledigte issues. lösche unnütze/duplizierte branches
-            7. reviewe offene pull requests, fixe merge errors und merge diese 
+            6. räume das repository auf ud lösche/reviewe und merge pull requests und issues. füge offene issues zu den todos hinzu und schließe erledigte issues. lösche unnütze/duplizierte branches
+            7. reviewe offene pull requests, fixe merge errors und merge diese
 
             WICHTIG: Committe NICHT, pushe NICHT und öffne KEINEN Pull Request
             selbst. Die GitHub-Action erkennt die geänderten Dateien automatisch,

@@ -96,7 +96,7 @@ impl AudioModule for ChorusModule {
             DRY_WET => self.dry_wet = value.clamp(0.0, 1.0),
             DEPTH => self.depth = value.clamp(0.0, 1.0),
             RATE => self.rate = value.clamp(0.1, 10.0),
-            VOICES => self.voices = value.clamp(0.0, 5.0),
+            VOICES => self.voices = value.clamp(1.0, 8.0),
             DELAY_MS => self.delay_ms = value.max(0.0),
             WIDTH => self.width = value.clamp(0.0, 1.0),
             _ => return false,

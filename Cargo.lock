@@ -738,6 +738,7 @@ name = "modulus-fx"
 version = "0.1.0"
 dependencies = [
  "modulus-core",
+ "modulus-ui",
  "nih_plug",
  "nih_plug_egui",
 ]
@@ -747,7 +748,15 @@ name = "modulus-synth"
 version = "0.1.0"
 dependencies = [
  "modulus-core",
+ "modulus-ui",
  "nih_plug",
+ "nih_plug_egui",
+]
+
+[[package]]
+name = "modulus-ui"
+version = "0.1.0"
+dependencies = [
  "nih_plug_egui",
 ]
 

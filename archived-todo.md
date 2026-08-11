@@ -88,6 +88,50 @@ archiviert. Stand: 2026-08-11.
 - [x] `opencode.yml`: hardened (concurrency, write-permission check, timeout, bot guard) + `rust-check` job
 - [x] All changes committed + pushed to `origin/main`
 
+## Review-Runde 2026-08-11 (2. Review: GH Actions, Bridge-Engines-Review, FX) — DONE
+
+Berichte: `reports/review-2026-08-11-gh-actions.md`, `reports/review-2026-08-11.md`.
+
+### GitHub Actions: Bugs (G1–G8)
+- [x] G1: `setup/action.yml` installiert `libx11-dev` + `libx11-xcb-dev`; doppelter Install-Schritt aus `checks/action.yml` entfernt
+- [x] G2: `/oc`-Handler erhält endlich `prompt:`-Input (`${{ github.event.comment.body }}`)
+- [x] G3: `concurrency`-Guard (`cancel-in-progress: true`) in `opencode-review.yml` + `opencode-todo-issues.yml`
+- [x] G4: `release.yml` baut den Windows-Installer im `rust`-Job mit und lädt ihn ins Release (`Modulus-Installer-*.exe`)
+- [x] G5: Release-Notes-Fallback `git log --oneline -60 HEAD` bei fehlendem `PREV_TAG` (beide Zweige)
+- [x] G6: opencode-Job mit `if: always() && (…)` — `/oc` läuft auch bei rotem `rust-check`
+- [x] G7: `actions/checkout@v6` → `@v4` in beiden opencode-Workflows (Versionseinheit + Node-20-Deprecation)
+- [x] G8: `build.yml` PR-Trigger mit `paths-ignore` (docs/**, reports/**, setups/**, *.md, .github/**)
+
+### Übernommen aus PR #7 (Bridge-Engines-Review, B1–B9)
+- [x] B1: `filter`-Modul ruft `set_type()` auf (Feld wurde nie an die DSP-Unit durchgereicht)
+- [x] B2: `analog_saw` clammt auf ±1 (war −3.0..1.0)
+- [x] B3: `pregain_db` wirkt als Filter-Drive (vor dem Filter), nicht als zweiter Master-Level; `amp_mod` auf 0..1 geklemmt
+- [x] B4: Sources free-runnen nach `note_off` (Gate-Felder entfernt) — Release-Tail des Amp-Envelopes hörbar
+- [x] B5: Velocity ins `envelope`-Modul (note_on-Velocity skaliert die Amplitude; `cv()` bleibt velocity-unabhängig)
+- [x] B6: `Le13700` scale 0.7 — klar vom Roland (1.0) unterscheidbar
+- [x] B7: `oscillator` + `am_bridge`/`fm_bridge` clammen `level` 0..1 und `pitch_semitones` ±24
+- [x] B8: LFO-CV zentriert um 1 (`1 ± depth`) — Filter-Modulation symmetrisch um die Basis (SETUPS.md korrigiert)
+- [x] B9: `ModuleEvents.note_on/note_off`-Felder entfernt (6 Konstruktionsstellen aktualisiert)
+
+### FX-Review-Befunde
+- [x] ARP-4075: `process_arp` als echte Feedback-Kaskade mit Stage-Clamp ±1 — Totbereich bei `res=1.0` behoben
+- [x] Roland/LE13700 nicht mehr bitidentisch (siehe B6)
+- [x] Chorus-`width` korrigiert: `channel_offset = π · (1 − width)` — width 0 = mono, 1 = antiphase
+- [x] Chorus schreibt die Delay-Leitung bei `voices==0`/`dry_wet==0` weiter (kein Einfrieren)
+- [x] `filt_smoothing`: `2π` aus der Koeffizienten-Formel entfernt (FX + Filter-Modul) — 50 ms ≈ τ=50 ms
+- [x] FX: `filt_cutoff` mit `Logarithmic(30)`-, `filt_resonance` mit `Linear(50)`-Smoother; `smoothed.next()` pro Sample
+- [x] Filter-Envelope bipolar: `filt_env_amount` Range −1..=1 (`modulus-synth`), `Linear(50)`-Smoother (#10)
+- [x] Setup-Filter-Smoothing: Modul-Default 0 → 15 ms (#11)
+- [x] Editor: `ctx.request_repaint()` pro Frame; `editor_state.is_open()` aus der Sample-Schleife gehoben (#12)
+- [x] Chorus-Voices: Range 1..=8 im Modul + beiden Plugins (Bypass nur noch über die Enable-Params) (#13)
+- [x] UI-Helfer geteilt: neues `crates/modulus-ui` (ACCENT/BG/PANEL, `dark_visuals()`, `slider_row()`, `section()`); Synth- + FX-Editor nutzen es (#14)
+- [x] Review-Workflow von Koalitions-O-Mat auf Modulus umgestellt (`crates/`, `docs/`, `.github/`) (#9)
+
+### Tests
+- [x] `synth_setup`: `amp_modulation_changes_output` auf Leistung (Power) umgestellt; `note_off_releases_the_envelopes` prüft hörbaren Release-Tail + Stille nach ~1 s
+- [x] `am_bridge`/`fm_bridge`-Gate-Tests → free-running („does_not_gate_itself")
+- [x] 33 Tests grün; `clippy -D warnings` + `fmt --check` sauber
+
 ## Open Questions / Notes
 - `Am-Synth` filter banks were never wired into its audio path; consolidated as single per-voice filter
 - `variable-effects` chorus placeholder replaced with a real multi-tap modulated delay-line chorus

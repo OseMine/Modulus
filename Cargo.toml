@@ -4,6 +4,7 @@ members = [
     "crates/modulus-core",
     "crates/modulus-synth",
     "crates/modulus-fx",
+    "crates/modulus-ui",
     "crates/demo-module",
     "xtask",
 ]

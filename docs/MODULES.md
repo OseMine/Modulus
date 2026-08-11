@@ -82,8 +82,9 @@ Add a new module to a category by putting it in that folder and calling its
 | `lfo` | `waveform` (0–7), `rate_hz` (0.01–20), `depth` (0–1) |
 
 Free-running (ignores note events): at `depth = 0` it is a passthrough, at
-`depth = 1` the frame swells between silence and unity at `rate_hz`
-(perfect for tremolo).
+`depth = 1` the CV swings from silence to 2×unity (`1 ± depth`, centered
+around `1`) at `rate_hz` — perfect for tremolo, and symmetric around the
+base for the filter cutoff.
 
 ### FX — `fx/` (`Fx`)
 

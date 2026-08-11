@@ -44,8 +44,6 @@ fn shipped_setups_build_and_render() {
 
 fn events() -> ModuleEvents {
     ModuleEvents {
-        note_on: None,
-        note_off: None,
         time_secs: 0.0,
         tuning_hz: 440.0,
     }
@@ -165,14 +163,24 @@ fn amp_modulation_changes_output() {
         setup.modulator.slot.params.insert("depth".into(), 1.0);
         setup.modulator.to_amp = to_amp;
         let mut graph = setup.build(&builtin_registry()).unwrap();
+        graph.prepare(44_100.0);
+        graph.note_on(60, 1.0, 440.0);
         // Half a second at rate_hz 4: the LFO swings fully several times.
-        render(&mut graph, 22_050)
+        let mut frame = [0.0; 2];
+        let mut power = 0.0_f32;
+        for _ in 0..22_050 {
+            graph.process_frame(&mut frame, &events(), 44_100.0);
+            power += frame[0] * frame[0];
+            frame = [0.0; 2];
+        }
+        power / 22_050.0
     };
     let none = render_with(0.0);
     let tremolo = render_with(1.0);
+    let drop = 1.0 - tremolo / none;
     assert!(
-        (tremolo - none).abs() > 0.05,
-        "amp modulation should change output: none {none}, tremolo {tremolo}"
+        drop.abs() > 0.1,
+        "amp modulation should change output: none {none}, tremolo {tremolo} (drop {drop})"
     );
 }
 
@@ -210,22 +218,34 @@ fn note_off_releases_the_envelopes() {
         frame = [0.0; 2];
     }
     graph.note_off(60);
-    // Skip the audible release tail (0.05s), then measure the silence after
-    // the envelopes have fully closed.
-    let mut dummy = [0.0; 2];
-    for _ in 0..4410 {
-        graph.process_frame(&mut dummy, &events(), 44_100.0);
-        dummy = [0.0; 2];
-    }
+    // The release tail (0.05 s) must stay audible: the sources keep
+    // generating and the amp envelope shapes the decay.
     let mut tail_peak = 0.0_f32;
-    for _ in 0..22_050 {
+    for _ in 0..4410 {
         graph.process_frame(&mut frame, &events(), 44_100.0);
         tail_peak = tail_peak.max(frame[0].abs());
         frame = [0.0; 2];
     }
     assert!(
-        tail_peak < 1e-4,
-        "release should silence the setup: attack {attack_peak}, tail {tail_peak}"
+        tail_peak > 1e-3,
+        "release tail should be audible: attack {attack_peak}, tail {tail_peak}"
+    );
+    // Skip another 1 s: the exponential release (20 tau) has fully closed,
+    // so the setup must be silent afterwards.
+    let mut dummy = [0.0; 2];
+    for _ in 0..44_100 {
+        graph.process_frame(&mut dummy, &events(), 44_100.0);
+        dummy = [0.0; 2];
+    }
+    let mut silence = 0.0_f32;
+    for _ in 0..22_050 {
+        graph.process_frame(&mut dummy, &events(), 44_100.0);
+        silence = silence.max(dummy[0].abs());
+        dummy = [0.0; 2];
+    }
+    assert!(
+        silence < 1e-4,
+        "release should silence the setup: attack {attack_peak}, silence {silence}"
     );
 }
 
