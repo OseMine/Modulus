@@ -1,4 +1,4 @@
-Name: opencode
+name: opencode
 
 on:
   issue_comment:
