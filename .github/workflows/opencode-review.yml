@@ -29,17 +29,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Review-Prompt aus Datei laden
-        id: review_prompt
-        shell: bash
-        run: |
-          {
-            echo 'review_prompt<<PROMT_EOF'
-            awk 'BEGIN{p=1} /^=====BINDUNGS-HINWEISE=====$/{p=0} p{print}' opencode-review-prompt.md \
-              | sed "s|__FOCUS__|${{ github.event.inputs.focus || 'das gesamte Projekt' }}|g"
-            echo 'PROMT_EOF'
-          } >> "$GITHUB_OUTPUT"
-
       - name: Run OpenCode review
         uses: anomalyco/opencode/github@latest
         env:
@@ -52,4 +41,32 @@ jobs:
           model: opencode/deepseek-v4-flash-free
           agent: reviewer
           use_github_token: true
-          prompt: ${{ steps.review_prompt.outputs.review_prompt }}
+          prompt: |
+            Automatisiertes Code-Review des Koalitions-O-Mat.
+            Fokusbereich: ${{ github.event.inputs.focus || 'das gesamte Projekt' }}
+
+            Gehe vor wie im Reviewer-Agent beschrieben:
+            1. Lies README.md, config.json, script.js, index.html, styles.css,
+               einfache-sprache.json, elections.json und alles unter elections/ sowie die
+               bestehende todo.md.
+            2. Finde Bugs, fehlende Features und Verbesserungsvorschläge für die
+               Algorithmen (Übereinstimmungsrechnung, Koalitionsberechnung,
+               Themenzuordnung, Sitzverteilung). Verifiziere Verdachtsfälle, indem du
+               Funktionen mit den echten Datendateien ausführst.
+            3. Lege reports/review-YYYY-MM-DD.md SOFRÜH WIE MÖGLICH an und fülle
+               es während des Reviews schrittweise (Ordner bei Bedarf anlegen).
+               Schreibe das Review nicht erst ganz am Ende.
+            4. Hänge neue Befunde als datierten Abschnitt oben in todo.md an,
+               bestehende Einträge unangetastet lassen.
+            ZUSÄTZLICHE NICHT IM REVIEWER Agent ENTHALTENE AUFGABEN:
+            5. Prüfe welche Punkte aus todo.md erledigt wurden und markiere sie als erledigt (z. B. „[x]“), bzw prüfe ob sie korrekt mit [x] markiert wurden und verschiebe danach alle abgehakten todos nach archived-todo.md.
+            6. räume das repository auf ubd lösche/reviewe und merge pull requests und issues. füge offene issues zu den todos hinzu und schließe erledigte issues. lösche unnütze/duplizierte branches
+            7. reviewe offene pull requests, fixe merge errors und merge diese 
+
+            WICHTIG: Committe NICHT, pushe NICHT und öffne KEINEN Pull Request
+            selbst. Die GitHub-Action erkennt die geänderten Dateien automatisch,
+            committed und pusht sie auf einen Branch und erstellt den Pull Request.
+            Beende deine Antwort direkt nach Schritt 7.
+
+            Regeln: Keinen Anwendungscode verändern, nur Berichte und todo.md.
+            Keine Findings ohne konkrete Datei-/Funktionsnamen. Wenn keine neuen
