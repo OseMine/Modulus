@@ -34,3 +34,4 @@ runs:
         name: ${{ inputs.artifact }}-${{ runner.os }}
         path: target/bundled
         if-no-files-found: error
+        retention-days: 14

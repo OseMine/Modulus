@@ -20,6 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,10 +37,15 @@ jobs:
       - name: Bundle VST3/CLAP
         uses: ./.github/actions/bundle
 
+      - name: Build Windows installer
+        if: matrix.os == 'windows-latest'
+        uses: ./.github/actions/installer
+
   release:
     name: Create GitHub release
     needs: rust
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,6 +65,13 @@ jobs:
           path: artifacts
           merge-multiple: false
 
+      - name: Download installer
+        uses: actions/download-artifact@v4
+        with:
+          pattern: modulus-installer-*
+          path: artifacts
+          merge-multiple: false
+
       - name: Package bundles
         run: |
           for dir in artifacts/modulus-bundles-*; do
@@ -72,6 +85,7 @@ jobs:
                        tar -czf "$archive" -C "$dir" . ;;
             esac
           done
+          find artifacts/modulus-installer-* -name '*.exe' -exec cp {} . \;
           ls -la modulus-*
 
       - name: Generate release notes with OpenCode
@@ -93,8 +107,14 @@ jobs:
           wc -l RELEASE_NOTES.md
 
       - name: Create GitHub release
-        run: >
-          gh release create "${{ github.ref_name }}"
-          modulus-*.zip modulus-*.tar.gz
-          --title "Modulus ${{ github.ref_name }}"
-          --notes-file RELEASE_NOTES.md || true
+        run: |
+          set -e
+          assets=(modulus-*.zip modulus-*.tar.gz modulus-*.exe)
+          if gh release create "${{ github.ref_name }}" "${assets[@]}" \
+            --title "Modulus ${{ github.ref_name }}" \
+            --notes-file RELEASE_NOTES.md; then
+            echo "release created"
+          else
+            echo "release already exists -- uploading assets instead"
+            gh release upload "${{ github.ref_name }}" "${assets[@]}" --clobber
+          fi

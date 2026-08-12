@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Keep the pinned action versions (checkout, upload/download-artifact,
+  # rust-cache, dtolnay/rust-toolchain...) up to date.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Cargo dependency bumps are intentionally NOT enabled: nih-plug is pinned
+  # to a specific git rev, anymap is vendored for a rustc workaround, and the
+  # toolchain is pinned at 1.97, so automated dependency updates would break
+  # the build more often than they help.

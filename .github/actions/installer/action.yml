@@ -99,3 +99,4 @@ runs:
         name: modulus-installer-${{ runner.os }}
         path: target/installer/*.exe
         if-no-files-found: error
+        retention-days: 14

@@ -13,14 +13,14 @@ runs:
 
     - name: Run clippy with warnings as errors
       shell: bash
-      run: cargo clippy --workspace --all-targets -- -D warnings
+      run: cargo clippy --locked --workspace --all-targets -- -D warnings
 
     - name: Build demo module (plugin host fixture)
       shell: bash
-      run: cargo build -p demo-module
+      run: cargo build --locked -p demo-module
 
     - name: Run tests (including plugin host)
       shell: bash
       env:
         MODULUS_DEMO_MODULE: ${{ runner.os == 'Windows' && format('{0}/target/debug/demo_module.dll', github.workspace) || (runner.os == 'macOS' && format('{0}/target/debug/libdemo_module.dylib', github.workspace) || format('{0}/target/debug/libdemo_module.so', github.workspace)) }}
-      run: cargo test --workspace
+      run: cargo test --locked --workspace
