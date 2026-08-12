@@ -9,17 +9,21 @@ use nih_plug::prelude::*;
 
 mod editor;
 mod params;
+mod setups;
 use params::ModulusParams;
 
-/// Live state shared with the GUI: the number of currently sounding voices.
+/// Live state shared with the GUI: the number of currently sounding voices
+/// and the selected setup preset.
 pub struct DesignState {
     pub voice_count: AtomicUsize,
+    pub setup_index: AtomicUsize,
 }
 
 impl DesignState {
     pub fn new() -> Self {
         Self {
             voice_count: AtomicUsize::new(0),
+            setup_index: AtomicUsize::new(0),
         }
     }
 }

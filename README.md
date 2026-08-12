@@ -28,7 +28,8 @@ and a real-time-safe DSP core that was consolidated from four older plugins
   extensions)
 - **Synth setup configs**: JSON files defining the synth topology and routing
   (4 soundgens → mixer → filter with pregain → amp/filter envelopes with
-  contour → modulator with amp/filter amounts)
+  contour → modulator with amp/filter amounts); the editor offers the shipped
+  setups (Default, Bridge Lead, Juno 106, DX7) as one-click presets
 - egui editors with persisted window size
 
 ## Workspace layout

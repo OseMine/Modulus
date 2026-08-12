@@ -11,7 +11,10 @@ use std::sync::Arc;
 use nih_plug::prelude::Editor;
 use nih_plug_egui::{create_egui_editor, egui, widgets};
 
+use crate::setups;
 use crate::ModulusParams;
+
+use std::sync::atomic::Ordering;
 
 const ACCENT: egui::Color32 = egui::Color32::from_rgb(0x5c, 0xb6, 0xff);
 const BG: egui::Color32 = egui::Color32::from_rgb(0x14, 0x16, 0x1a);
@@ -87,6 +90,27 @@ pub fn create_editor(
                 ui.add_space(4.0);
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.spacing_mut().slider_width = 280.0;
+
+                    let mut selection = design_state.setup_index.load(Ordering::Relaxed);
+                    egui::ComboBox::from_id_source("setup-preset")
+                        .selected_text(setups::name(selection))
+                        .show_ui(ui, |ui| {
+                            for (index, shipped) in setups::SHIPPED.iter().enumerate() {
+                                ui.selectable_value(&mut selection, index, shipped.name);
+                            }
+                        });
+                    ui.label(
+                        egui::RichText::new(
+                            "Setup presets re-tune the synth (oscillators, filter, envelopes)",
+                        )
+                        .weak()
+                        .small(),
+                    );
+                    ui.add_space(6.0);
+                    if selection != design_state.setup_index.load(Ordering::Relaxed) {
+                        design_state.setup_index.store(selection, Ordering::Relaxed);
+                        setups::apply(selection, &params, setter);
+                    }
 
                     section(ui, "Global", |ui| {
                         slider_row(
