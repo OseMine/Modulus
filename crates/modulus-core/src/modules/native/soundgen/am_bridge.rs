@@ -86,7 +86,6 @@ pub struct AmBridgeModule {
     modulator_pitch: f32,
     mode: BridgeMode,
     am_depth: f32,
-    gate: bool,
 }
 
 impl AmBridgeModule {
@@ -103,7 +102,6 @@ impl AmBridgeModule {
             modulator_pitch: 0.0,
             mode: BridgeMode::Am,
             am_depth: 0.5,
-            gate: false,
         }
     }
 
@@ -136,17 +134,13 @@ impl AudioModule for AmBridgeModule {
     fn reset(&mut self) {
         self.carrier.reset();
         self.modulator.reset();
-        self.gate = false;
     }
 
     fn note_on(&mut self, note: u8, _velocity: f32, tuning_hz: f32) {
         self.tune(midi_note_to_freq(note, tuning_hz));
-        self.gate = true;
     }
 
-    fn note_off(&mut self, _note: u8) {
-        self.gate = false;
-    }
+    fn note_off(&mut self, _note: u8) {}
 
     fn params(&self) -> &[ModuleParamSpec] {
         PARAMS
@@ -158,12 +152,12 @@ impl AudioModule for AmBridgeModule {
                 self.carrier_waveform = Waveform::from_index(value.clamp(0.0, 7.0) as usize)
             }
             CARRIER_LEVEL => self.carrier_level = value.clamp(0.0, 1.0),
-            CARRIER_PITCH => self.carrier_pitch = value,
+            CARRIER_PITCH => self.carrier_pitch = value.clamp(-24.0, 24.0),
             MODULATOR_WAVEFORM => {
                 self.modulator_waveform = Waveform::from_index(value.clamp(0.0, 7.0) as usize)
             }
             MODULATOR_LEVEL => self.modulator_level = value.clamp(0.0, 1.0),
-            MODULATOR_PITCH => self.modulator_pitch = value,
+            MODULATOR_PITCH => self.modulator_pitch = value.clamp(-24.0, 24.0),
             MODE => self.mode = BridgeMode::from_index(value.clamp(0.0, 1.0) as usize),
             AM_DEPTH => self.am_depth = value.clamp(0.0, 1.0),
             _ => return false,
@@ -190,11 +184,8 @@ impl AudioModule for AmBridgeModule {
     }
 
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, _sample_rate: f32) {
-        if !self.gate {
-            frame[0] = 0.0;
-            frame[1] = 0.0;
-            return;
-        }
+        // Sources keep generating after note_off so the amp envelope can
+        // shape the release tail.
         self.carrier.set_waveform(self.carrier_waveform);
         self.modulator.set_waveform(self.modulator_waveform);
         let carrier = self.carrier.generate();

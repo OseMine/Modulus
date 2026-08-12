@@ -33,6 +33,7 @@ jobs:
 
   opencode:
     if: |
+      always() &&
       (contains(github.event.comment.body, '/oc') ||
        startsWith(github.event.comment.body, '/oc') ||
        contains(github.event.comment.body, '/opencode') ||
@@ -84,5 +85,27 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/deepseek-v4-flash-free
+          use_github_token: true
+          prompt: |
+            Handle the triggering comment on this issue/pull request:
+
+            ${{ github.event.comment.body }}
+
+            Execute the requested task: diagnose and fix problems, implement
+            the requested changes, and keep todo.md and reports/ up to date.
+            If the task mentions "todo.md" or a GitHub issue, first check the
+            open items there and work through the matching ones.
+
+            Rules:
+            - Never touch the workflows/actions in this repository unless the
+              comment explicitly asks for it.
+            - Prefer small, focused edits that follow the existing code style.
+            - Update todo.md: mark fixed items with [x] and move completed
+              items to archived-todo.md.
+            - After implementing, run `cargo fmt --all` and `cargo clippy
+              --workspace --all-targets -- -D warnings` and fix any issues.
+            - Do not commit or push: the action commits the changes
+              automatically.

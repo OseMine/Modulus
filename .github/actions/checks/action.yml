@@ -3,6 +3,7 @@ description: >-
   Compiles the workspace, runs fmt/clippy (with -D warnings) and the full
   test suite including the plugin-host test against the demo module.
   Intended for every rust job regardless of the workflow that hosts it.
+  All cargo invocations are --locked so lockfile drift is caught in CI.
 
 runs:
   using: composite

@@ -86,7 +86,7 @@ fn analog_saw(phase: f32, rng: &mut FastRng) -> f32 {
         -((-asymmetric).powf(SHARPNESS))
     };
 
-    shaped * 2.0 - 1.0
+    shaped.clamp(-1.0, 1.0)
 }
 
 fn va_saw(phase: f32, rng: &mut FastRng) -> f32 {

@@ -99,6 +99,9 @@ impl Plugin for Modulus {
         let params = &self.params;
         let sample_rate = self.sample_rate;
         let mut next_event = context.next_event();
+        // Checked once per block, not per sample (the editor state is an
+        // atomic flag; reading it in the sample loop is wasteful).
+        let editor_open = self.params.editor_state.is_open();
 
         for (sample_id, mut channel_samples) in buffer.iter_samples().enumerate() {
             while let Some(event) = next_event {
@@ -155,7 +158,7 @@ impl Plugin for Modulus {
             };
 
             let frame = self.engine.process(&frame_params, &fx_params, sample_rate);
-            if self.params.editor_state.is_open() {
+            if editor_open {
                 self.design_state
                     .voice_count
                     .store(self.engine.active_voices(), Ordering::Relaxed);

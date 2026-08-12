@@ -88,19 +88,29 @@ impl Chorus {
 
     #[allow(clippy::needless_range_loop)]
     pub fn process(&mut self, frame: &mut [f32; 2], params: &ChorusParams, sample_rate: f32) {
-        if self.size == 0 || params.voices == 0 || params.dry_wet <= 0.0 {
+        if self.size == 0 {
             return;
         }
 
-        let voices = params.voices.clamp(1, 8);
+        let voices = params.voices.clamp(0, 8);
         let max_delay_samples = (MAX_DELAY_MS * 0.001 * sample_rate - 2.0).max(1.0);
         let base_delay = (params.delay_ms * 0.001 * sample_rate).clamp(0.0, max_delay_samples);
         let depth_samples = params.depth.clamp(0.0, 1.0) * max_delay_samples * 0.5;
         let lfo_step = TWO_PI * params.rate / sample_rate;
-        let channel_offset = PI * params.width.clamp(0.0, 1.0);
-        let voice_spread = TWO_PI / voices as f32;
+        // Width maps 0 (mono, right LFO in phase) to 1 (maximum stereo
+        // spread, right LFO in anti-phase with the left one).
+        let channel_offset = PI * (1.0 - params.width.clamp(0.0, 1.0));
+        let voice_spread = if voices > 0 {
+            TWO_PI / voices as f32
+        } else {
+            0.0
+        };
         let dry = 1.0 - params.dry_wet;
-        let wet_gain = params.dry_wet / voices as f32;
+        let wet_gain = if voices > 0 {
+            params.dry_wet / voices as f32
+        } else {
+            1.0
+        };
         let size = self.size;
         let mask = self.mask;
 
@@ -127,30 +137,44 @@ impl Chorus {
                 &mut self.write_right
             };
 
-            let mut wet = 0.0;
-            for voice in 0..voices {
-                let voice_phase = base_phase + voice as f32 * voice_spread;
-                let modulation = 0.5 + 0.5 * voice_phase.sin();
-                let delay = (base_delay + depth_samples * modulation).clamp(1.0, max_delay_samples);
-                let delay_floor = delay.floor();
-                let fraction = delay - delay_floor;
-                let index = (*write + size - delay_floor as usize) & mask;
-                let next_index = (index + 1) & mask;
-                let delayed = buffer[index] * (1.0 - fraction) + buffer[next_index] * fraction;
-                wet += delayed;
-            }
-            wet *= wet_gain;
+            if voices > 0 {
+                let mut wet = 0.0;
+                for voice in 0..voices {
+                    let voice_phase = base_phase + voice as f32 * voice_spread;
+                    let modulation = 0.5 + 0.5 * voice_phase.sin();
+                    let delay =
+                        (base_delay + depth_samples * modulation).clamp(1.0, max_delay_samples);
+                    let delay_floor = delay.floor();
+                    let fraction = delay - delay_floor;
+                    let index = (*write + size - delay_floor as usize) & mask;
+                    let next_index = (index + 1) & mask;
+                    let delayed = buffer[index] * (1.0 - fraction) + buffer[next_index] * fraction;
+                    wet += delayed;
+                }
+                wet *= wet_gain;
 
-            let input = frame[channel];
-            let buffer = if channel == 0 {
-                &mut self.buffer_left
+                let input = frame[channel];
+                let buffer = if channel == 0 {
+                    &mut self.buffer_left
+                } else {
+                    &mut self.buffer_right
+                };
+                frame[channel] = input * dry + wet;
+                buffer[*write] = input;
+                *write = (*write + 1) & mask;
             } else {
-                &mut self.buffer_right
-            };
-            buffer[*write] = input;
-            *write = (*write + 1) & mask;
-
-            frame[channel] = input * dry + wet;
+                // voices = 0 means bypass: pass the input through dry, but
+                // keep the delay lines moving so re-enabling the chorus
+                // does not replay stale audio.
+                let input = frame[channel];
+                let buffer = if channel == 0 {
+                    &mut self.buffer_left
+                } else {
+                    &mut self.buffer_right
+                };
+                buffer[*write] = input;
+                *write = (*write + 1) & mask;
+            }
         }
     }
 }

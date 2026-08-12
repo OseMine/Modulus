@@ -8,33 +8,11 @@
 
 use std::sync::Arc;
 
+use modulus_ui::{dark_visuals, section, slider_row, ACCENT};
 use nih_plug::prelude::Editor;
 use nih_plug_egui::{create_egui_editor, egui, widgets};
 
 use crate::ModulusParams;
-
-const ACCENT: egui::Color32 = egui::Color32::from_rgb(0x5c, 0xb6, 0xff);
-const BG: egui::Color32 = egui::Color32::from_rgb(0x14, 0x16, 0x1a);
-const PANEL: egui::Color32 = egui::Color32::from_rgb(0x1c, 0x1f, 0x26);
-
-/// One labeled slider row inside a section.
-fn slider_row(ui: &mut egui::Ui, label: &str, widget: impl egui::Widget) {
-    ui.label(egui::RichText::new(label).weak());
-    ui.add(widget);
-    ui.end_row();
-}
-
-/// A section header followed by a two-column grid of labeled sliders.
-fn section(ui: &mut egui::Ui, title: &str, rows: impl FnOnce(&mut egui::Ui)) {
-    ui.label(egui::RichText::new(title).strong().color(ACCENT));
-    ui.indent(title, |ui| {
-        egui::Grid::new(title)
-            .num_columns(2)
-            .spacing([24.0, 10.0])
-            .show(ui, rows);
-    });
-    ui.add_space(10.0);
-}
 
 pub fn create_editor(
     params: Arc<ModulusParams>,
@@ -44,14 +22,7 @@ pub fn create_editor(
         params.editor_state.clone(),
         (),
         |ctx, _| {
-            let mut visuals = egui::Visuals::dark();
-            visuals.panel_fill = PANEL;
-            visuals.window_fill = BG;
-            visuals.widgets.inactive.bg_fill = egui::Color32::from_rgb(0x2a, 0x2e, 0x37);
-            visuals.widgets.hovered.bg_fill = egui::Color32::from_rgb(0x36, 0x3c, 0x47);
-            visuals.widgets.active.bg_fill = ACCENT;
-            visuals.selection.bg_fill = ACCENT;
-            ctx.set_visuals(visuals);
+            ctx.set_visuals(dark_visuals());
         },
         move |ctx, setter, _| {
             egui::TopBottomPanel::top("header").show(ctx, |ui| {
@@ -255,6 +226,9 @@ pub fn create_editor(
                     });
                 });
             });
+            // Repaint continuously while the editor is open so the live
+            // voice counter stays in sync with the audio thread.
+            ctx.request_repaint();
         },
     )
 }

@@ -3,6 +3,10 @@
 //!
 //! At `depth = 0` the module is a passthrough; at `depth = 1` the frame is
 //! fully swelled between silence and unity at the LFO rate (tremolo).
+//!
+//! The CV output (`AudioModule::cv`) is centered around `1.0`:
+//! `1 ± depth`, so modulation derived from `cv - 1` sweeps both up and down
+//! around the base value ("around the base" in the setup docs).
 
 use std::sync::Arc;
 
@@ -37,6 +41,7 @@ pub struct LfoModule {
     rate_hz: f32,
     depth: f32,
     last_gain: f32,
+    last_cv: f32,
 }
 
 impl LfoModule {
@@ -50,6 +55,7 @@ impl LfoModule {
             rate_hz: 1.0,
             depth: 0.5,
             last_gain: 1.0,
+            last_cv: 1.0,
         }
     }
 }
@@ -108,12 +114,15 @@ impl AudioModule for LfoModule {
         let unipolar = ((bipolar + 1.0) * 0.5).clamp(0.0, 1.0);
         let gain = 1.0 - self.depth + self.depth * unipolar;
         self.last_gain = gain;
+        // Centered CV: 1 - depth .. 1 + depth, so modulation sweeps
+        // symmetrically around the base value.
+        self.last_cv = 1.0 - self.depth + 2.0 * self.depth * unipolar;
         frame[0] *= gain;
         frame[1] *= gain;
     }
 
     fn cv(&self) -> f32 {
-        self.last_gain
+        self.last_cv
     }
 }
 

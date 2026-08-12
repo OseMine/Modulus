@@ -74,12 +74,13 @@ impl Plugin for ModulusFx {
     ) -> ProcessStatus {
         let params = &self.params;
         let sample_rate = self.sample_rate;
-        let two_pi = 2.0 * std::f32::consts::PI;
 
         for mut channel_samples in buffer.iter_samples() {
             let smoothing_ms = params.filt_smoothing.value();
+            // One-pole time constant: coeff = exp(-1 / (tau * sr)), so the
+            // label "ms" matches the actual tau directly (no 2*pi factor).
             let smoothing_coeff = if smoothing_ms > 0.0 {
-                (-two_pi * (1.0 / (smoothing_ms * 0.001 * sample_rate))).exp()
+                (-1.0 / (smoothing_ms * 0.001 * sample_rate)).exp()
             } else {
                 0.0
             };
@@ -93,8 +94,11 @@ impl Plugin for ModulusFx {
 
             let frame_params = FxFrameParams {
                 filter_type: params.filt_type.value().to_core(),
-                filter_cutoff: params.filt_cutoff.value(),
-                filter_resonance: params.filt_resonance.value(),
+                // Smoothed per sample so automation does not alias at block
+                // boundaries (the engine additionally smooths via
+                // filter_smoothing_coeff).
+                filter_cutoff: params.filt_cutoff.smoothed.next(),
+                filter_resonance: params.filt_resonance.smoothed.next(),
                 filter_smoothing_coeff: smoothing_coeff,
                 filter_enabled: params.filt_enabled.value(),
                 gain_in_db: params.gain_in.smoothed.next(),

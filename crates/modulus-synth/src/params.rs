@@ -176,7 +176,15 @@ impl Default for ModulusParams {
             filt_cutoff: cutoff_param("Filter Cutoff", 1000.0)
                 .with_smoother(SmoothingStyle::Logarithmic(30.0)),
             filt_resonance: level_param("Filter Resonance", 0.3),
-            filt_env_amount: level_param("Filter Env Amount", 0.0),
+            filt_env_amount: FloatParam::new(
+                "Filter Env Amount",
+                0.0,
+                FloatRange::Linear {
+                    min: -1.0,
+                    max: 1.0,
+                },
+            )
+            .with_smoother(SmoothingStyle::Linear(50.0)),
 
             env_attack: time_param("Env Attack", 0.01),
             env_decay: time_param("Env Decay", 0.1),
@@ -204,7 +212,7 @@ impl Default for ModulusParams {
             fx_chorus_voices: IntParam::new(
                 "Chorus Voices",
                 2,
-                IntRange::Linear { min: 0, max: 5 },
+                IntRange::Linear { min: 1, max: 8 },
             ),
             fx_chorus_delay: FloatParam::new(
                 "Chorus Delay",

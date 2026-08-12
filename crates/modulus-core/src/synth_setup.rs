@@ -31,11 +31,12 @@
 //! Routing:
 //!
 //! 1. every sound generator adds its output into the shared bus (mixer),
-//! 2. the filter processes the bus with `cutoff * 2^(contour * filter_env
+//! 2. the pregain (drive, dB) scales the bus before the filter,
+//! 3. the filter processes the bus with `cutoff * 2^(contour * filter_env
 //!    + to_filter_octaves * (mod_cv - 1))`,
-//! 3. the amp envelope shapes the bus, the modulator scales it by
+//! 4. the amp envelope shapes the bus, the modulator scales it by
 //!    `1 + (mod_cv - 1) * to_amp`,
-//! 4. the mixer output level is applied last.
+//! 5. the mixer output level is applied last.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -485,8 +486,8 @@ impl SynthGraph {
 
     /// Render one stereo frame into `frame` (added to whatever is there).
     ///
-    /// Routing: sources sum into the mixer bus, pregain + filter process
-    /// it (cutoff modulated by the filter envelope contour and the
+    /// Routing: sources sum into the mixer bus, pregain drives the bus into
+    /// the filter (cutoff modulated by the filter envelope contour and the
     /// modulator), the amp envelope shapes it, the modulator scales it by
     /// its amp amount, and the mixer output level is applied.
     pub fn process_frame(&mut self, frame: &mut [f32; 2], events: &ModuleEvents, sample_rate: f32) {
@@ -505,6 +506,12 @@ impl SynthGraph {
         self.modulator.process(&mut dummy, events, sample_rate);
         let mod_cv = self.modulator.cv();
 
+        // Pregain is the drive into the filter, not a second master level:
+        // it must be applied before the filter stage.
+        let pregain = gain_db_to_linear(self.pregain_db);
+        bus[0] *= pregain;
+        bus[1] *= pregain;
+
         let cutoff = self.cutoff_base
             * 2.0_f32.powf(
                 self.contour_octaves * filter_env_cv + self.mod_to_filter_octaves * (mod_cv - 1.0),
@@ -515,14 +522,15 @@ impl SynthGraph {
 
         self.amp_env.process(&mut bus, events, sample_rate);
         if self.mod_to_amp > 0.0 {
-            let amp_mod = (1.0 + (mod_cv - 1.0) * self.mod_to_amp).max(0.0);
+            // The centered LFO CV is 1 +/- depth, so the tremolo dip is
+            // symmetric; clamp so the modulation can never boost past unity.
+            let amp_mod = (1.0 + (mod_cv - 1.0) * self.mod_to_amp).clamp(0.0, 1.0);
             bus[0] *= amp_mod;
             bus[1] *= amp_mod;
         }
 
-        let pregain = gain_db_to_linear(self.pregain_db);
-        bus[0] *= pregain * self.output_level;
-        bus[1] *= pregain * self.output_level;
+        bus[0] *= self.output_level;
+        bus[1] *= self.output_level;
 
         frame[0] += bus[0];
         frame[1] += bus[1];

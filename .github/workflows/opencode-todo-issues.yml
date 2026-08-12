@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: "0 6 * * 3" # Mittwoch 06:00 UTC
 
+# Guard gegen parallele Läufe, die duplizierte Issues erzeugen würden.
+concurrency:
+  group: opencode-todo-issues
+  cancel-in-progress: true
+
 permissions:
   contents: read
   issues: write
@@ -18,7 +23,7 @@ jobs:
   create-issues:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

@@ -39,8 +39,6 @@ fn loads_and_runs_demo_module() {
     module.prepare(44_100.0);
 
     let events = ModuleEvents {
-        note_on: None,
-        note_off: None,
         time_secs: 0.0,
         tuning_hz: 440.0,
     };

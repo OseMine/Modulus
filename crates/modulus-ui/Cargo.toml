@@ -1,0 +1,10 @@
+[package]
+name = "modulus-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Shared egui helpers for the Modulus plugin editors"
+
+[dependencies]
+nih_plug_egui = { workspace = true }

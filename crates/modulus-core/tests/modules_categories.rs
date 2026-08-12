@@ -4,8 +4,6 @@ use modulus_core::modules::{builtin_registry, AudioModule, ModuleEvents, ModuleK
 
 fn events() -> ModuleEvents {
     ModuleEvents {
-        note_on: None,
-        note_off: None,
         time_secs: 0.0,
         tuning_hz: 440.0,
     }
@@ -119,11 +117,17 @@ fn am_bridge_am_depth_changes_the_signal() {
 }
 
 #[test]
-fn am_bridge_is_silent_without_gate() {
+fn am_bridge_does_not_gate_itself() {
+    // Sound generators keep generating without a note-on: the amp envelope
+    // in the signal chain is responsible for gating, so the release tail
+    // stays audible after note_off.
     let registry = builtin_registry();
     let mut bridge = registry.create("am_bridge").unwrap();
     let (peak, _) = render(&mut bridge, 1024, false);
-    assert_eq!(peak, 0.0);
+    assert!(
+        peak > 0.0,
+        "free-running source should be audible, peak {peak}"
+    );
 }
 
 #[test]
@@ -178,11 +182,17 @@ fn fm_bridge_amount_changes_the_signal() {
 }
 
 #[test]
-fn fm_bridge_is_silent_without_gate() {
+fn fm_bridge_does_not_gate_itself() {
+    // Sound generators keep generating without a note-on: the amp envelope
+    // in the signal chain is responsible for gating, so the release tail
+    // stays audible after note_off.
     let registry = builtin_registry();
     let mut fm = registry.create("fm_bridge").unwrap();
     let (peak, _) = render(&mut fm, 1024, false);
-    assert_eq!(peak, 0.0);
+    assert!(
+        peak > 0.0,
+        "free-running source should be audible, peak {peak}"
+    );
 }
 
 #[test]

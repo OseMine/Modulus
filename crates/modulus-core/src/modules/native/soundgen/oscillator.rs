@@ -33,7 +33,6 @@ pub struct OscillatorModule {
     waveform: Waveform,
     level: f32,
     pitch_semitones: f32,
-    gate: bool,
 }
 
 impl OscillatorModule {
@@ -45,7 +44,6 @@ impl OscillatorModule {
             waveform,
             level: 0.7,
             pitch_semitones: 0.0,
-            gate: false,
         }
     }
 }
@@ -69,19 +67,15 @@ impl AudioModule for OscillatorModule {
 
     fn reset(&mut self) {
         self.osc.reset();
-        self.gate = false;
     }
 
     fn note_on(&mut self, note: u8, _velocity: f32, tuning_hz: f32) {
         let semitones = 2.0_f32.powf(self.pitch_semitones / 12.0);
         self.osc
             .set_frequency(midi_note_to_freq(note, tuning_hz) * semitones);
-        self.gate = true;
     }
 
-    fn note_off(&mut self, _note: u8) {
-        self.gate = false;
-    }
+    fn note_off(&mut self, _note: u8) {}
 
     fn params(&self) -> &[ModuleParamSpec] {
         PARAMS
@@ -94,8 +88,8 @@ impl AudioModule for OscillatorModule {
                 self.waveform = waveform;
                 self.osc.set_waveform(waveform);
             }
-            LEVEL => self.level = value,
-            PITCH => self.pitch_semitones = value,
+            LEVEL => self.level = value.clamp(0.0, 1.0),
+            PITCH => self.pitch_semitones = value.clamp(-24.0, 24.0),
             _ => return false,
         }
         true
@@ -111,11 +105,8 @@ impl AudioModule for OscillatorModule {
     }
 
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, _sample_rate: f32) {
-        if !self.gate {
-            frame[0] = 0.0;
-            frame[1] = 0.0;
-            return;
-        }
+        // Sources keep generating after note_off: the amp envelope in the
+        // signal chain shapes the release tail.
         let sample = self.osc.generate() * self.level;
         frame[0] = sample;
         frame[1] = sample;

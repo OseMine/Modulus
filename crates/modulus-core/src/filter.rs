@@ -6,8 +6,8 @@ pub const FILTER_MAX_CUTOFF: f32 = 20_000.0;
 /// The four filter models consolidated from `variable-filter`.
 ///
 /// `Moog`, `Roland` and `Le13700` share the 4-pole ladder topology and only
-/// differ in their resonance scaling factor; `Arp4075` is a 4-stage
-/// one-pole cascade.
+/// differ in their resonance scaling factor (1.8 / 1.0 / 0.7); `Arp4075` is
+/// a 4-stage one-pole cascade with feedback resonance.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FilterType {
     Moog,
@@ -151,7 +151,7 @@ impl VariableFilter {
         match self.filter_type {
             FilterType::Moog => self.process_ladder(input, sample_rate, cutoff, resonance, 1.8),
             FilterType::Roland => self.process_ladder(input, sample_rate, cutoff, resonance, 1.0),
-            FilterType::Le13700 => self.process_ladder(input, sample_rate, cutoff, resonance, 1.0),
+            FilterType::Le13700 => self.process_ladder(input, sample_rate, cutoff, resonance, 0.7),
             FilterType::Arp4075 => self.process_arp(input, sample_rate, cutoff, resonance),
         }
     }
@@ -188,11 +188,15 @@ impl VariableFilter {
 
     fn process_arp(&mut self, input: f32, sample_rate: f32, cutoff: f32, resonance: f32) -> f32 {
         let fc = (2.0 * PI * cutoff / sample_rate).sin();
-        let res = resonance;
+        let res = resonance.clamp(0.0, 1.0);
 
-        let mut output = input;
+        // Classic ARP-4075 style: four cascaded one-pole stages with the
+        // resonance fed back from the last stage. The previous per-stage
+        // `(1 - res)` attenuation froze the stages completely at res = 1.0
+        // (silence instead of a resonance peak).
+        let mut output = input - res * self.arp_state[3];
         for stage in &mut self.arp_state {
-            *stage += fc * (output - *stage + res * (*stage - output));
+            *stage = (*stage + fc * (output - *stage)).clamp(-1.0, 1.0);
             output = *stage;
         }
 

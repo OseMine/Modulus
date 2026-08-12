@@ -37,7 +37,7 @@ the param (Hz for logarithmic smoothing).
 | `filt_type` | enum | Moog, Roland, LE13700, ARP 4075 | Moog | |
 | `filt_cutoff` | float | 20–20 kHz skewed | 1 kHz | logarithmic smoother 30 ms |
 | `filt_resonance` | float | 0–1 | 0.3 | |
-| `filt_env_amount` | float | 0–1 | 0.0 | |
+| `filt_env_amount` | float | −1…1 | 0.0 | smoothed |
 
 ### Amplitude envelope
 
@@ -65,7 +65,7 @@ the param (Hz for logarithmic smoothing).
 | `fx_chorus_dry_wet` | float | 0–1 | 0.35 | smoothed |
 | `fx_chorus_depth` | float | 0–1 | 0.5 | smoothed |
 | `fx_chorus_rate` | float | 0.1–10 Hz | 1.0 | smoothed, unit Hz |
-| `fx_chorus_voices` | int | 0–5 | 2 | (0 = chorus bypassed) |
+| `fx_chorus_voices` | int | 1–8 | 2 | (bypass via `fx_enable`) |
 | `fx_chorus_delay` | float | 0–50 ms | 10 | unit ms |
 | `fx_chorus_width` | float | 0–1 | 0.5 | smoothed |
 | `fx_gain` | float | −60…12 dB | 0 | logarithmic smoother |
@@ -90,7 +90,7 @@ the param (Hz for logarithmic smoothing).
 | `chorus_dry_wet` | float | 0–1 | 0.5 | smoothed |
 | `chorus_depth` | float | 0–1 | 0.5 | smoothed |
 | `chorus_rate` | float | 0.1–10 Hz | 1.0 | smoothed, unit Hz |
-| `chorus_voices` | int | 0–5 | 2 | (0 = chorus bypassed) |
+| `chorus_voices` | int | 1–8 | 2 | (bypass via `chorus_enabled`) |
 | `chorus_delay` | float | 0–50 ms | 10 | unit ms |
 | `chorus_width` | float | 0–1 | 0.5 | smoothed |
 

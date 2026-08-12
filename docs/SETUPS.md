@@ -117,10 +117,12 @@ cargo run -p modulus-core --example setup_player
 ## Modulation
 
 Modulation happens through `AudioModule::cv()`: envelopes expose their
-current stage (0..1), modulators the gain they currently apply
-(`1` = no contribution, so modulation vanishes at `depth` 0). `SynthGraph`
-applies:
+current stage (0..1), modulators a CV centered around `1` (`1 ± depth`, so
+modulation vanishes at `depth` 0 and the source is symmetric around the
+base value). `SynthGraph` applies:
 
 - filter cutoff: `cutoff * 2^(contour_octaves * env) *
-  2^(to_filter_octaves * (mod_cv − 1))`
-- amp: multiplied by `1 + (mod_cv − 1) * to_amp` after the amp envelope.
+  2^(to_filter_octaves * (mod_cv − 1))` — the LFO moves the cutoff
+  `± to_filter_octaves` octaves around the base value.
+- amp: multiplied by `clamp(1 + (mod_cv − 1) * to_amp, 0, 1)` after the
+  amp envelope (1 = full tremolo).

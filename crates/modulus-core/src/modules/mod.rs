@@ -70,10 +70,6 @@ pub struct ModuleParamSpec {
 /// Per-frame event data handed to every module.
 #[derive(Clone, Copy, Debug)]
 pub struct ModuleEvents {
-    /// A new note being pressed (note, velocity).
-    pub note_on: Option<(u8, f32)>,
-    /// A note being released.
-    pub note_off: Option<u8>,
     /// Seconds since the graph was prepared.
     pub time_secs: f64,
     /// Current global tuning in Hz.
