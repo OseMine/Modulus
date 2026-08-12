@@ -59,14 +59,14 @@ jobs:
           echo "tag=$(git describe --tags --abbrev=0 ${GITHUB_REF_NAME}~1 2>/dev/null || echo '')" >> "$GITHUB_OUTPUT"
 
       - name: Download bundles
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: modulus-bundles-*
           path: artifacts
           merge-multiple: false
 
       - name: Download installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: modulus-installer-*
           path: artifacts
