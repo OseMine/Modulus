@@ -81,6 +81,11 @@ jobs:
               core.setFailed(`Could not verify permissions for ${login}: ${err.message}`);
             }
 
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Run opencode
         uses: anomalyco/opencode/github@latest
         env:
@@ -90,22 +95,27 @@ jobs:
           model: opencode/deepseek-v4-flash-free
           use_github_token: true
           prompt: |
-            Handle the triggering comment on this issue/pull request:
+            You are OpenCode working on this repository. A user with write
+            access triggered you via a comment starting with `/oc` or
+            `/opencode` on an issue or pull request. The task follows the
+            command:
 
             ${{ github.event.comment.body }}
 
-            Execute the requested task: diagnose and fix problems, implement
-            the requested changes, and keep todo.md and reports/ up to date.
-            If the task mentions "todo.md" or a GitHub issue, first check the
-            open items there and work through the matching ones.
+            Process:
+            1. Read the task carefully and identify the affected files.
+            2. If the task references todo.md or a GitHub issue, read the open
+               items there first and work through the matching ones.
+            3. Implement with small, focused edits that follow the existing
+               code style (Rust workspace, nih-plug + egui).
+            4. Verify your work: run `cargo fmt --all` and `cargo clippy
+               --workspace --all-targets -- -D warnings` and fix any findings.
+            5. Keep todo.md current: mark finished items with [x] and move them
+               to archived-todo.md; document new findings in reports/.
 
             Rules:
-            - Never touch the workflows/actions in this repository unless the
+            - Do not touch .github/workflows or .github/actions unless the
               comment explicitly asks for it.
-            - Prefer small, focused edits that follow the existing code style.
-            - Update todo.md: mark fixed items with [x] and move completed
-              items to archived-todo.md.
-            - After implementing, run `cargo fmt --all` and `cargo clippy
-              --workspace --all-targets -- -D warnings` and fix any issues.
-            - Do not commit or push: the action commits the changes
+            - Do not commit or push: the action commits your changes
               automatically.
+            - End your reply with a short summary of what you changed.

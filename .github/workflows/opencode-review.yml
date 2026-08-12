@@ -65,15 +65,25 @@ jobs:
                Schreibe das Review nicht erst ganz am Ende.
             4. Hänge neue Befunde als datierten Abschnitt oben in todo.md an,
                bestehende Einträge unangetastet lassen.
-            ZUSÄTZLICHE NICHT IM REVIEWER Agent ENTHALTENE AUFGABEN:
-            5. Prüfe welche Punkte aus todo.md erledigt wurden und markiere sie als erledigt (z. B. „[x]“), bzw prüfe ob sie korrekt mit [x] markiert wurden und verschiebe danach alle abgehakten todos nach archived-todo.md.
-            6. räume das repository auf ud lösche/reviewe und merge pull requests und issues. füge offene issues zu den todos hinzu und schließe erledigte issues. lösche unnütze/duplizierte branches
-            7. reviewe offene pull requests, fixe merge errors und merge diese
+
+            Zusätzliche Aufgaben (über den Reviewer-Agent hinaus):
+            5. Prüfe, welche Punkte aus todo.md erledigt wurden, und markiere
+               sie mit [x]; verifiziere vorhandene [x]-Markierungen und
+               verschiebe danach alle abgehakten Todos nach archived-todo.md.
+            6. Räume das Repository auf: ergänze offene Issues in todo.md,
+               schließe erledigte Issues und lösche unnötige oder duplizierte
+               Branches.
+            7. Reviewe offene Pull Requests, behebe Merge-Konflikte und merge
+               sie.
 
             WICHTIG: Committe NICHT, pushe NICHT und öffne KEINEN Pull Request
             selbst. Die GitHub-Action erkennt die geänderten Dateien automatisch,
             committed und pusht sie auf einen Branch und erstellt den Pull Request.
-            Beende deine Antwort direkt nach Schritt 7.
+            Beende deine Antwort direkt nach Schritt 7 mit einer kurzen
+            Zusammenfassung.
 
-            Regeln: Keinen Anwendungscode verändern, nur Berichte und todo.md.
-            Keine Findings ohne konkrete Datei-/Funktionsnamen. Wenn keine neuen
+            Regeln:
+            - Keinen Anwendungscode verändern, nur Berichte und todo.md.
+            - Keine Findings ohne konkrete Datei-/Funktionsnamen.
+            - Wenn keine neuen Befunde gefunden wurden, lege dennoch
+              reports/review-YYYY-MM-DD.md an und dokumentiere das Ergebnis.

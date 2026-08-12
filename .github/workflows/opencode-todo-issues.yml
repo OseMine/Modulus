@@ -38,23 +38,25 @@ jobs:
           prompt: |
             Aufgabe: Erzeuge GitHub-Issues aus den offenen Aufgaben in todo.md.
 
-            Schritte:
+            Ablauf:
             1. Lies todo.md (und bei Bedarf reports/ für Kontext).
             2. Sammle alle offenen Aufgaben – erkennbar an „- [ ]"-Checkboxen –
                sowie die als „Tracking offene GitHub-Issues" notierten Punkte.
                Fokusbereich (optional): ${{ github.event.inputs.focus || 'alle offenen Punkte' }}
             3. Gruppiere zusammengehörige Punkte sinnvoll zu einem Issue
                (ein Issue pro logischem Task, nicht ein Issue pro Zeile).
-            4. Erzeuge für jede Gruppe genau EIN GitHub-Issue mit:
+            4. Rufe zuerst die bereits existierenden Issues per GitHub API ab
+               ($GITHUB_TOKEN, REST: GET /repos/{owner}/{repo}/issues) und
+               überspringe Punkte, für die bereits ein passendes Issue existiert
+               (Titel-/Inhaltsabgleich).
+            5. Erzeuge für jede Gruppe genau EIN GitHub-Issue (REST:
+               POST /repos/{owner}/{repo}/issues) mit:
                - aussagekräftigem Titel (deutsch, kurz),
-               - Body mit: Kontext, betroffene Dateien/Funktionen (mit Zeilennummern
-                 aus todo.md), Akzeptanzkriterien und den daraus übernommenen
-                 todo.md-Text.
-            5. Nutze die GitHub API via $GITHUB_TOKEN (REST: POST /repos/{owner}/{repo}/issues).
-            6. Duplizierte/bereits existierende Issues nicht neu anlegen – vorher
-               bestehende Issues per API auflisten und Titel vergleichen.
+               - Body mit: Kontext, betroffene Dateien/Funktionen (mit
+                 Zeilennummern aus todo.md), Akzeptanzkriterien und dem daraus
+                 übernommenen todo.md-Text.
+            6. Antworte am Ende mit einer Zusammenfassung der erstellten Issues
+               (Nummer, Titel) und der übersprungenen Duplikate.
 
             WICHTIG:
             - Verändere KEINE Dateien, committe NICHTS und erstelle KEINEN Pull Request.
-            - Antworte am Ende mit einer Zusammenfassung der erstellten Issues
-              (Nummer, Titel) und der übersprungenen Duplikate.
