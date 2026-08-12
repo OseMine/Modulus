@@ -107,7 +107,10 @@ fn va_saw(phase: f32, rng: &mut FastRng) -> f32 {
     }
 
     let bandlimited = sample * 2.0 / PI;
-    (bandlimited + DC_OFFSET) / (1.0 + DC_OFFSET.abs())
+    let output = (bandlimited + DC_OFFSET) / (1.0 + DC_OFFSET.abs());
+    // The band-limited partial sum can overshoot the unit norm; clamp so the
+    // waveform never exceeds [-1, 1] (was peaking at ~1.083).
+    output.clamp(-1.0, 1.0)
 }
 
 fn analog_square(phase: f32) -> f32 {
@@ -142,12 +145,40 @@ fn va_square(phase: f32, rng: &mut FastRng) -> f32 {
         k += 1;
     }
 
-    sample * 4.0 / PI
+    // Clamp: the 3-harmonic partial sum reaches ~1.19 at the harmonics'
+    // phase alignment, which would clip earlier than the other forms.
+    (sample * 4.0 / PI).clamp(-1.0, 1.0)
 }
 
 fn vintage_saw(phase: f32) -> f32 {
     let t = 1.0 / phase.max(0.01);
     let b = 5.0 * phase.max(0.01);
     let a = -2.0 / (E.powf(-b * t) - 1.0);
-    a * E.powf(-b * phase) + (1.0 - a)
+    // The exponential swing dips just below -1; clamp keeps the unit norm.
+    (a * E.powf(-b * phase) + (1.0 - a)).clamp(-1.0, 1.0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn all_waveforms_stay_within_unit_range() {
+        let mut rng = FastRng::new(0x1234_5678);
+        for waveform in Waveform::ALL {
+            let mut min = f32::MAX;
+            let mut max = f32::MIN;
+            let mut phase = 0.0;
+            // Sweep many frequencies/phases, including the band-limited
+            // partial-sum alignments that used to overshoot.
+            for step in 0..20_000 {
+                phase = (phase + TWO_PI * (0.01 + 0.07 * (step % 9) as f32)).rem_euclid(TWO_PI);
+                let sample = waveform.generate(phase, &mut rng);
+                min = min.min(sample);
+                max = max.max(sample);
+            }
+            assert!(min >= -1.0, "{waveform:?} undershoots: min {min}");
+            assert!(max <= 1.0, "{waveform:?} overshoots: max {max}");
+        }
+    }
 }

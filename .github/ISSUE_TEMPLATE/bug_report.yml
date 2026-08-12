@@ -1,0 +1,53 @@
+name: Bug report
+description: Melde einen Fehler in Modulus (Synth/FX/Module-Engine/CI)
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Was passiert, und was sollte stattdessen passieren?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduktionsschritte
+      description: Schritte, um den Fehler zu reproduzieren (Setup/Patches, Parameterwerte, Noten/Automation).
+      placeholder: |
+        1. Setup "..." laden
+        2. Parameter ... auf ... stellen
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin / Format
+      description: Welches Plugin und Format ist betroffen?
+      options:
+        - Modulus-Synth (VST3)
+        - Modulus-Synth (CLAP)
+        - Modulus-FX (VST3)
+        - Modulus-FX (CLAP)
+        - Modulus-Core / Module-Engine (Headless, Lua)
+        - CI / GitHub Actions
+        - Unsicher / Sonstiges
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Plugin-Version oder Git-Commit (z. B. v0.1.0, 661c37c)
+  - type: input
+    id: os
+    attributes:
+      label: Betriebssystem
+      description: z. B. Windows 11, macOS 14, Ubuntu 24.04
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Audio-Verhalten
+      description: Fehlermeldungen, clippy-/test-Ausgaben oder eine Beschreibung des akustischen Verhaltens (Clipping, Aussetzer, Fehltonhöhen ...).

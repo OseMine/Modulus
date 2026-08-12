@@ -3,6 +3,8 @@ use std::f32::consts::PI;
 use crate::rng::FastRng;
 use crate::waveform::Waveform;
 
+const TWO_PI: f32 = 2.0 * PI;
+
 /// Phase-accumulator oscillator with a selectable waveform.
 ///
 /// Consolidates the phase-accumulation loop from `variable-synth` and the
@@ -53,15 +55,12 @@ impl Oscillator {
     }
 
     fn update_phase_increment(&mut self) {
-        self.phase_increment = 2.0 * PI * self.frequency / self.sample_rate;
+        self.phase_increment = TWO_PI * self.frequency / self.sample_rate;
     }
 
     pub fn generate(&mut self) -> f32 {
         let sample = self.waveform.generate(self.phase, &mut self.rng);
-        self.phase += self.phase_increment;
-        if self.phase >= 2.0 * PI {
-            self.phase -= 2.0 * PI;
-        }
+        self.phase = (self.phase + self.phase_increment).rem_euclid(TWO_PI);
         sample
     }
 
@@ -69,10 +68,45 @@ impl Oscillator {
     /// FM) while advancing the phase normally.
     pub fn generate_at(&mut self, offset: f32) -> f32 {
         let sample = self.waveform.generate(self.phase + offset, &mut self.rng);
-        self.phase += self.phase_increment;
-        if self.phase >= 2.0 * PI {
-            self.phase -= 2.0 * PI;
-        }
+        self.phase = (self.phase + self.phase_increment).rem_euclid(TWO_PI);
         sample
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn phase_stays_bounded_at_freq_above_sample_rate() {
+        // At freq >= sample_rate the phase increment is >= 2π, which the old
+        // single-subtraction wrap could not handle. rem_euclid must keep the
+        // accumulator within [0, 2π) for every waveform.
+        for waveform in Waveform::ALL {
+            let mut osc = Oscillator::new(44_100.0, waveform);
+            osc.set_frequency(88_200.0);
+            for _ in 0..100_000 {
+                osc.generate();
+                assert!(
+                    (0.0..=TWO_PI).contains(&osc.phase),
+                    "{waveform:?} phase escaped range: {}",
+                    osc.phase
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn phase_stays_bounded_in_generate_at() {
+        let mut osc = Oscillator::new(44_100.0, Waveform::Sine);
+        osc.set_frequency(220_500.0);
+        for _ in 0..100_000 {
+            osc.generate_at(0.0);
+            assert!(
+                (0.0..=TWO_PI).contains(&osc.phase),
+                "phase escaped range: {}",
+                osc.phase
+            );
+        }
     }
 }

@@ -32,7 +32,8 @@ const PARAMS: &[ModuleParamSpec] = &[
 
 pub struct FilterModule {
     name: String,
-    filter: VariableFilter,
+    filter_left: VariableFilter,
+    filter_right: VariableFilter,
     filter_type: FilterType,
     cutoff: f32,
     resonance: f32,
@@ -44,7 +45,8 @@ impl FilterModule {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            filter: VariableFilter::new(),
+            filter_left: VariableFilter::new(),
+            filter_right: VariableFilter::new(),
             filter_type: FilterType::Moog,
             cutoff: 1000.0,
             resonance: 0.3,
@@ -61,7 +63,8 @@ impl FilterModule {
         } else {
             0.0
         };
-        self.filter.set_smoothing(coeff);
+        self.filter_left.set_smoothing(coeff);
+        self.filter_right.set_smoothing(coeff);
     }
 }
 
@@ -80,12 +83,14 @@ impl AudioModule for FilterModule {
 
     fn prepare(&mut self, sample_rate: f32) {
         self.sample_rate = sample_rate;
-        self.filter.set_params(self.cutoff, self.resonance);
+        self.filter_left.set_params(self.cutoff, self.resonance);
+        self.filter_right.set_params(self.cutoff, self.resonance);
         self.update_smoothing();
     }
 
     fn reset(&mut self) {
-        self.filter.reset();
+        self.filter_left.reset();
+        self.filter_right.reset();
     }
 
     fn params(&self) -> &[ModuleParamSpec] {
@@ -116,10 +121,15 @@ impl AudioModule for FilterModule {
     fn process(&mut self, frame: &mut [f32; 2], _events: &ModuleEvents, sample_rate: f32) {
         // The type set via `set_param` is stored separately; make sure the
         // engine actually uses it (previously all setups rendered as Moog).
-        self.filter.set_type(self.filter_type);
-        self.filter.set_params(self.cutoff, self.resonance);
-        frame[0] = self.filter.process(frame[0], sample_rate);
-        frame[1] = self.filter.process(frame[1], sample_rate);
+        // One filter state per channel: a single shared filter lets the left
+        // channel's state bleed into the (silent) right channel.
+        self.filter_left.set_type(self.filter_type);
+        self.filter_left.set_params(self.cutoff, self.resonance);
+        frame[0] = self.filter_left.process(frame[0], sample_rate);
+
+        self.filter_right.set_type(self.filter_type);
+        self.filter_right.set_params(self.cutoff, self.resonance);
+        frame[1] = self.filter_right.process(frame[1], sample_rate);
     }
 }
 

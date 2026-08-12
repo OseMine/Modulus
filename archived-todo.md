@@ -132,6 +132,14 @@ Berichte: `reports/review-2026-08-11-gh-actions.md`, `reports/review-2026-08-11.
 - [x] `am_bridge`/`fm_bridge`-Gate-Tests → free-running („does_not_gate_itself")
 - [x] 33 Tests grün; `clippy -D warnings` + `fmt --check` sauber
 
+## Review-Runde 3 — Befunde #18–#21 (2026-08-12)
+- [x] #18 FX-Filter koppelt linken/rechten Kanal über den Filter-State → `FxEngine` und `filter`-Modul führen jetzt einen `VariableFilter` pro Kanal (`fx.rs`, `modules/native/fx/filter.rs`); Regressions-Test `filter_does_not_couple_channels`
+- [x] #19 Plugin-Bypass friert die Chorus-Delay-Linie ein → Chorus wird auch bei `chorus_enabled == false` mit `dry_wet = 0` (Bypass) aufgerufen, damit die Delay-Linien weiterlaufen; Regressions-Test `chorus_bypass_keeps_delay_line_running`
+- [x] #20 VA-/Vintage-Wellenformen überschreiten ±1 → `va_saw`, `va_square`, `vintage_saw` clammen auf `[-1, 1]`; Regressions-Test `all_waveforms_stay_within_unit_range`
+- [x] #21 Oscillator-Phasen-Wrap bricht bei `freq >= sample_rate` → `phase = (phase + increment).rem_euclid(2π)` in `generate()`/`generate_at()`; Regressions-Tests `phase_stays_bounded_at_freq_above_sample_rate` + `phase_stays_bounded_in_generate_at`
+- [x] #23 Fehlende GitHub-Issue-Templates → `.github/ISSUE_TEMPLATE/bug_report.yml` + `feature_request.yml`
+- [x] Dependabot-PRs #24/#25/#26 (checkout@7, github-script@9, download-artifact@8) gemergt
+
 ## Open Questions / Notes
 - `Am-Synth` filter banks were never wired into its audio path; consolidated as single per-voice filter
 - `variable-effects` chorus placeholder replaced with a real multi-tap modulated delay-line chorus

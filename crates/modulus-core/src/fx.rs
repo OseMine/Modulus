@@ -201,14 +201,16 @@ impl Default for Chorus {
 /// Serial effects rack for Modulus FX: input gain -> variable filter ->
 /// chorus -> output gain.
 pub struct FxEngine {
-    filter: crate::filter::VariableFilter,
+    filter_left: crate::filter::VariableFilter,
+    filter_right: crate::filter::VariableFilter,
     chorus: Chorus,
 }
 
 impl FxEngine {
     pub fn new() -> Self {
         Self {
-            filter: crate::filter::VariableFilter::new(),
+            filter_left: crate::filter::VariableFilter::new(),
+            filter_right: crate::filter::VariableFilter::new(),
             chorus: Chorus::new(),
         }
     }
@@ -218,7 +220,8 @@ impl FxEngine {
     }
 
     pub fn reset(&mut self) {
-        self.filter.reset();
+        self.filter_left.reset();
+        self.filter_right.reset();
         self.chorus.reset();
     }
 
@@ -226,18 +229,32 @@ impl FxEngine {
         apply_gain_db(frame, params.gain_in_db);
 
         if params.filter_enabled {
-            self.filter.set_type(params.filter_type);
-            self.filter.set_smoothing(params.filter_smoothing_coeff);
-            self.filter
+            // One filter state per channel: a single shared filter lets the
+            // left channel's state bleed into the (silent) right channel.
+            self.filter_left.set_type(params.filter_type);
+            self.filter_left
+                .set_smoothing(params.filter_smoothing_coeff);
+            self.filter_left
                 .set_params(params.filter_cutoff, params.filter_resonance);
-            for sample in frame.iter_mut() {
-                *sample = self.filter.process(*sample, sample_rate);
-            }
+            frame[0] = self.filter_left.process(frame[0], sample_rate);
+
+            self.filter_right.set_type(params.filter_type);
+            self.filter_right
+                .set_smoothing(params.filter_smoothing_coeff);
+            self.filter_right
+                .set_params(params.filter_cutoff, params.filter_resonance);
+            frame[1] = self.filter_right.process(frame[1], sample_rate);
         }
 
-        if params.chorus_enabled {
-            self.chorus.process(frame, &params.chorus, sample_rate);
+        // Always run the chorus so the delay lines keep moving while the
+        // effect is bypassed; a dry mix still writes the current input into
+        // the buffer. Skipping the call entirely used to freeze the delay
+        // line and replay stale audio on re-enable.
+        let mut chorus_params = params.chorus;
+        if !params.chorus_enabled {
+            chorus_params.dry_wet = 0.0;
         }
+        self.chorus.process(frame, &chorus_params, sample_rate);
 
         apply_gain_db(frame, params.gain_out_db);
     }
@@ -254,4 +271,82 @@ pub struct SynthFxParams {
     pub chorus: ChorusParams,
     pub chorus_enabled: bool,
     pub gain_db: f32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn frame_params(chorus_enabled: bool) -> FxFrameParams {
+        FxFrameParams {
+            filter_type: FilterType::Moog,
+            filter_cutoff: 500.0,
+            filter_resonance: 0.0,
+            filter_smoothing_coeff: 0.0,
+            filter_enabled: true,
+            gain_in_db: 0.0,
+            chorus: ChorusParams {
+                dry_wet: 1.0,
+                depth: 1.0,
+                rate: 0.5,
+                voices: 2,
+                delay_ms: 50.0,
+                width: 1.0,
+            },
+            chorus_enabled,
+            gain_out_db: 0.0,
+        }
+    }
+
+    #[test]
+    fn filter_does_not_couple_channels() {
+        // Left channel gets a 1 kHz sine, right channel silence. A single
+        // shared filter would ring the right channel with processed left
+        // audio (right peak ~0.135); per-channel filters must keep it ~0.
+        let mut engine = FxEngine::new();
+        engine.set_sample_rate(44_100.0);
+        let params = frame_params(false);
+
+        let mut right_peak: f32 = 0.0;
+        for i in 0..2048 {
+            let left = (TWO_PI * 1000.0 * i as f32 / 44_100.0).sin() * 0.5;
+            let mut frame = [left, 0.0];
+            engine.process(&mut frame, &params, 44_100.0);
+            right_peak = right_peak.max(frame[1].abs());
+        }
+        assert!(right_peak < 1e-3, "right channel leaked: peak {right_peak}");
+    }
+
+    #[test]
+    fn chorus_bypass_keeps_delay_line_running() {
+        let mut engine = FxEngine::new();
+        engine.set_sample_rate(44_100.0);
+        let mut params = frame_params(true);
+
+        // Fill the delay lines with a loud signal.
+        for _ in 0..44_100 {
+            engine.process(&mut [1.0, 1.0], &params, 44_100.0);
+        }
+
+        // Bypass and feed silence for longer than the delay-line length so
+        // any stale audio would have flushed out of a delay line that keeps
+        // moving (100 ms @ 44.1 kHz = 4410 samples, buffer is larger).
+        params.chorus_enabled = false;
+        for _ in 0..20_000 {
+            engine.process(&mut [0.0, 0.0], &params, 44_100.0);
+        }
+
+        // Re-enable: must stay silent instead of replaying stale audio.
+        params.chorus_enabled = true;
+        let mut peak: f32 = 0.0;
+        for _ in 0..4410 {
+            let mut frame = [0.0, 0.0];
+            engine.process(&mut frame, &params, 44_100.0);
+            peak = peak.max(frame[0].abs()).max(frame[1].abs());
+        }
+        assert!(
+            peak < 1e-3,
+            "stale delay replayed after bypass: peak {peak}"
+        );
+    }
 }

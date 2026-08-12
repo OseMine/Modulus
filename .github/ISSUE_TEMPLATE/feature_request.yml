@@ -1,0 +1,29 @@
+name: Feature request
+description: Schlage ein neues Feature für Modulus vor
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: Welches Problem löst das Feature? Was fehlt?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag
+      description: Wie könnte das Feature aussehen (Bedienung, Parameter, Module, Setups)?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+      description: Workarounds oder ähnliche Ansätze aus anderen Synthesizern.
+  - type: input
+    id: scope
+    attributes:
+      label: Betroffener Bereich
+      description: z. B. DSP (Oszillator/FX), Module-Engine, Lua, UI (egui), CI
