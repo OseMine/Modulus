@@ -1,5 +1,34 @@
 # Modulus — Task List
 
+## Review-Runde 6 (2026-08-17) — neue Befunde (Gesamtprojekt-Review)
+
+- [ ] N1 (mittel): `Waveform::Square` (waveform.rs:53-59) ist nicht
+      phasen-normalisiert (`if phase < PI` auf rohem `phase`, keine
+      `rem_euclid`) — gleiche Klasse wie U3. Bei `Oscillator::generate_at`
+      (FM-Bridge, `phase + offset`) liefert Square bei Phase ≥ 2π dauerhaft
+      −1 (Harness: `generate(7.0)` → −1, korrekt wäre +1, da 7.0−2π = 0.72).
+      Fix: `phase.rem_euclid(TWO_PI)` vor dem Vergleich; Regressions-Test
+      analog zu `phase_stays_bounded_in_generate_at` für Square.
+- [ ] N2 (niedrig): `Voice::trigger` (voice.rs:111-119) resettet den Filter
+      nicht (`filter.reset()` fehlt) — bei Retrigger/Steal bleiben die
+      Filter-Zustände (y1..y4, oldx/oldy*) des vorherigen Anschlags erhalten
+      → potenzielle Klicks. `Voice::reset` resettet den Filter korrekt.
+- [ ] N3 (niedrig): `osc2_level`/`modulator_level` sind im AM-Modus tot —
+      `voice.rs:144` und `am_bridge.rs:195` verwenden in AM-Mode weder
+      `osc2_level` noch `modulator_level` (Harness: Level 0.0 vs. 1.0 →
+      bitidentischer Peak). Der „OSC 2 Level“-Slider (params.rs `osc2_level`)
+      hat im AM-Modus keinen Effekt; docs/MODULES.md listet `modulator_level`
+      als am_bridge-Param ohne Hinweis.
+- [ ] N4 (niedrig, Repo): kein LICENSE-File — Cargo.toml deklariert ISC,
+      README.md:102 verweist auf „repository license files“, das File fehlt.
+- [ ] N5 (niedrig, CI): `paths-ignore` unvollständig/inkonsistent mit G8 —
+      build.yml ignoriert nur `docs/**`/`reports/**`/`*.md` (Änderungen an
+      `.github/**`/`setups/**` triggern volle 3-OS-CI), lint.yml ignoriert
+      `reports/**` nicht.
+
+> Runde-5-Befunde U1–U6 weiterhin offen (U1/U2/U3 in dieser Runde erneut
+> verifiziert: U1 Re-Enable-Peak 0.959; U2 AM-Peak 1.9997; U3 84 % flach bei −1).
+
 ## Review-Runde 5 (2026-08-12) — neue Befunde (UI-/DSP-/Doku-/Repo-Review)
 
 - [ ] U1 (hoch): Synth-Chorus-Bypass friert die Delay-Linie ein —
